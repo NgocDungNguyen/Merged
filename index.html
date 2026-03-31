@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Filter Configuration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .custom-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white w-full max-w-4xl rounded-xl custom-shadow overflow-hidden flex flex-col border border-gray-200">
+        <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center bg-white">
+            <div class="flex items-center space-x-2">
+                <span class="font-semibold text-gray-800">Tag</span>
+                <i class="fas fa-info-circle text-gray-400 text-sm cursor-pointer"></i>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden">
+            <div class="w-2/3 p-5 overflow-y-auto space-y-4">
+                <div class="border border-gray-200 rounded-lg p-4 space-y-4">
+                    <h3 class="font-bold text-gray-800 text-sm">Filter option</h3>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-gray-600">Source</label>
+                        <div class="relative">
+                            <select id="source-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="Collection">Collection</option>
+                                <option value="Tag" selected>Tag</option>
+                                <option value="Vendor">Vendor</option>
+                                <option value="Product Type">Product Type</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-500">Want to <span class="font-bold">filter by metafields</span>? Choose your metafields <a href="#" class="text-blue-600 hover:underline">here</a>, then return to continue filter setup.</p>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-gray-600">Label</label>
+                        <div class="relative">
+                            <input type="text" value="Tag" id="label-field" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400">3/40</span>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-gray-600 flex items-center">Display type <i class="fas fa-question-circle ml-1 text-gray-400 text-[10px]"></i></label>
+                        <div class="relative">
+                            <select id="display-type-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="Box">Box</option>
+                                <option value="Check List">Check List</option>
+                                <option value="Image Swatch">Image Swatch</option>
+                                <option value="Color Swatch">Color Swatch</option>
+                                <option value="Swatch Text">Color Swatch + Text</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-8 pt-1">
+                        <label class="flex items-center text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Collapse on Desktop</label>
+                        <label class="flex items-center text-xs text-gray-700 cursor-pointer"><input type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Collapse on Mobile</label>
+                    </div>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <h3 class="font-bold text-gray-800 text-sm">Filter values</h3>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-medium text-gray-600">Select filter value</label>
+                        <div class="relative">
+                            <select id="filter-value-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="all">All Filter Values</option>
+                                <option value="manually">Manually</option>
+                                <option value="merged">Merged Group</option>
+                                <option value="multi">Multi level</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                        </div>
+                    </div>
+                    <div class="space-y-1 pt-1">
+                        <label class="block text-xs font-medium text-gray-600 flex items-center">Option select <i class="fas fa-question-circle ml-1 text-gray-400 text-[10px]"></i></label>
+                        <div class="relative">
+                            <select id="option-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="multiple">Multiple</option>
+                                <option value="single">Single</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400"><i class="fas fa-chevron-down text-xs"></i></div>
+                        </div>
+                    </div>
+                    <p id="filter-description" class="text-[11px] text-gray-500 leading-relaxed border-b border-gray-100 pb-3"></p>
+                    <div id="hide-merged-container" class="flex items-center text-xs text-gray-700 cursor-pointer -mt-1 pb-1 hidden">
+                        <input id="hide-merged-values" type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">
+                        Hidden Merged Group Values
+                    </div>
+                    
+                    <div id="match-options" class="flex items-center space-x-6 py-1">
+                        <span class="text-xs font-medium text-gray-600">Result must match:</span>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center text-xs text-gray-700 cursor-pointer"><input type="radio" name="match" class="w-4 h-4 text-zinc-800 border-gray-300 focus:ring-zinc-800"><span class="ml-2">All values</span></label>
+                            <label class="flex items-center text-xs text-gray-700 cursor-pointer"><input type="radio" name="match" checked class="w-4 h-4 text-zinc-800 border-gray-300 focus:ring-zinc-800"><span class="ml-2">Any value</span></label>
+                        </div>
+                    </div>
+                    
+                    <div id="dynamic-config-area" class="space-y-3"></div>
+                    <p id="group-name-warning" class="hidden text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2"></p>
+
+                    <div id="remaining-values-box-container" class="hidden space-y-2 pt-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider">Remaining Source Values</label>
+                            <span class="text-[10px] text-gray-400" id="remaining-count">0 values</span>
+                        </div>
+                        <div id="remaining-values-list" class="border border-gray-200 rounded-md bg-white max-h-64 overflow-y-auto divide-y divide-gray-100 shadow-inner">
+                            <!-- Items populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-1/3 border-l border-gray-200 bg-gray-50 flex flex-col">
+                <div class="px-4 py-3 flex items-center justify-center border-b border-gray-100 bg-white relative">
+                    <span class="text-xs font-bold text-gray-700">Preview</span>
+                    <button class="text-xs text-blue-600 font-medium absolute right-4">Hide</button>
+                </div>
+                <div class="p-4 flex-1 overflow-y-auto preview-container">
+                    <div class="bg-[#f0f7ff] border border-[#d6eaff] rounded-lg p-3 flex items-start space-x-3 relative mb-6">
+                        <i class="fas fa-info-circle text-blue-600 mt-0.5 text-xs"></i>
+                        <div class="text-[11px] text-[#2c4e7d] pr-4">Got a design request? <a href="#" class="text-blue-600 underline">Let us know</a> or <a href="#" class="text-blue-600 underline">Book a call with us!</a></div>
+                        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-[10px]"></i></button>
+                    </div>
+                    <div id="preview-box" class="bg-white border border-gray-200 rounded p-4 h-auto min-h-[320px] shadow-sm overflow-x-hidden"></div>
+                    <div class="mt-4 space-y-1">
+                        <p class="text-[11px] text-gray-500">Note: The preview is for display purposes only.</p>
+                        <i class="fas fa-question-circle text-gray-400 text-[12px]"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 py-3 border-t border-gray-200 flex justify-end space-x-2 bg-gray-50">
+            <button class="px-4 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</button>
+            <button class="px-4 py-1.5 bg-zinc-800 border border-zinc-800 rounded text-sm font-medium text-white hover:bg-zinc-700">Save</button>
+        </div>
+    </div>
+
+    <script>
+        const filterSelect = document.getElementById('filter-value-select');
+        const optionSelect = document.getElementById('option-select');
+        const description = document.getElementById('filter-description');
+        const matchOptions = document.getElementById('match-options');
+        const hideMergedContainer = document.getElementById('hide-merged-container');
+        const hideMergedCheckbox = document.getElementById('hide-merged-values');
+        const labelInput = document.getElementById('label-field');
+        const previewBox = document.getElementById('preview-box');
+        const remainingContainer = document.getElementById('remaining-values-box-container');
+        const remainingList = document.getElementById('remaining-values-list');
+        const dynamicConfigArea = document.getElementById('dynamic-config-area');
+        const groupNameWarning = document.getElementById('group-name-warning');
+        let filterValueChangedOnce = false;
+
+        const descriptions = {
+            all: 'Automatically show all filter values related to each collection and search result page. Excluded filter values will be hidden on store.',
+            manually: 'Filter values without products will be hidden on the storefront.',
+            merged: 'Grouping Filter Value underlying a created Group (For example "Blue" include Navy, Teal, "Red" include Red Wine, Red Pink, etc..)',
+            multi: ''
+        };
+
+        const defaultSwatchPalette = ['#111827','#6b7280','#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#a16207','#84cc16','#14b8a6','#f43f5e','#7c3aed','#0f766e','#1d4ed8','#ea580c','#4b5563','#be123c'];
+        let sourceValuesData = ['Cotton','Polyester','Wool','Silk','Linen','Denim','Leather','Nylon','Satin','Velvet','Cashmere','Spandex','Rayon','Canvas','Fleece','Jersey','Tweed','Suede','Mesh','Viscose'].map((v, i) => ({
+            name: v,
+            included: true,
+            color: defaultSwatchPalette[i % defaultSwatchPalette.length],
+            image: ''
+        }));
+
+        function isColorMode() {
+            return filterSelect.value === 'merged' && (displayTypeSelect.value === 'Color Swatch' || displayTypeSelect.value === 'Swatch Text');
+        }
+
+        function isImageMode() {
+            return filterSelect.value === 'merged' && displayTypeSelect.value === 'Image Swatch';
+        }
+
+        function isVisualSwatchMode() {
+            return filterSelect.value === 'merged' && ['Color Swatch', 'Image Swatch', 'Swatch Text'].includes(displayTypeSelect.value);
+        }
+
+        function getAssignedValues() {
+            const assigned = new Set();
+            document.querySelectorAll('.value-input').forEach(input => {
+                if (input.value.trim()) assigned.add(input.value.trim().toLowerCase());
+            });
+            return assigned;
+        }
+
+        function renderRemainingBox() {
+            if (filterSelect.value !== 'merged') return;
+            const assigned = getAssignedValues();
+            const filtered = sourceValuesData.filter(v => !assigned.has(v.name.toLowerCase()));
+            const swatchMode = isVisualSwatchMode();
+            
+            document.getElementById('remaining-count').textContent = `${filtered.length} values`;
+            remainingList.className = swatchMode
+                ? 'border border-gray-200 rounded-xl bg-gray-50 p-3 max-h-64 overflow-y-auto shadow-inner'
+                : 'border border-gray-200 rounded-md bg-white max-h-64 overflow-y-auto divide-y divide-gray-100 shadow-inner';
+            remainingList.innerHTML = '';
+
+            filtered.forEach((item) => {
+                const row = document.createElement('div');
+                row.draggable = true;
+                row.dataset.name = item.name;
+                row.className = swatchMode
+                    ? 'flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all duration-150 mb-2 last:mb-0'
+                    : 'flex items-center justify-between p-2 hover:bg-gray-50 group transition-colors duration-150';
+                
+                row.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden mr-4">
+                        <i class="fas fa-ellipsis-v text-gray-300 text-[10px] cursor-grab active:cursor-grabbing"></i>
+                        <div class="${swatchMode ? 'w-9 h-9 rounded-full border-2 border-white shadow ring-1 ring-gray-300 overflow-hidden flex-shrink-0' : 'hidden'}" style="background:${isImageMode() ? '#f3f4f6' : (item.color || '#cccccc')}">
+                            ${isImageMode() ? (item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<div class='w-full h-full bg-gray-100'></div>`) : ''}
+                        </div>
+                        <span class="text-[11px] font-medium text-gray-700 truncate ${!item.included ? 'opacity-40 line-through' : ''}">${item.name}</span>
+                    </div>
+                    <div class="flex items-center flex-shrink-0 space-x-2">
+                        <div class="${isColorMode() ? '' : 'hidden'} remaining-swatch-wrap flex items-center border border-gray-300 rounded-md bg-white h-7 overflow-hidden relative">
+                            <button type="button" onclick="this.parentElement.querySelector('input[type=color]').click()" class="w-7 h-7 flex items-center justify-center border-r border-gray-200 bg-gray-50">
+                                <span class="w-4 h-4 rounded-full border border-gray-300 block" style="background:${item.color || '#cccccc'}"></span>
+                            </button>
+                            <input type="text" value="${item.color || '#cccccc'}" onchange="updateSourceColor('${item.name}', this.value)" class="w-20 px-2 text-[10px] text-gray-700 outline-none">
+                            <input type="color" value="${item.color || '#cccccc'}" onchange="updateSourceColor('${item.name}', this.value)" class="absolute opacity-0 pointer-events-none w-0 h-0">
+                        </div>
+                        <div class="${isImageMode() ? '' : 'hidden'} remaining-image-wrap flex items-center border border-gray-300 rounded-md bg-white h-7 overflow-hidden relative">
+                            <label class="w-7 h-7 flex items-center justify-center border-r border-gray-200 bg-gray-50 cursor-pointer overflow-hidden">
+                                ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>`}
+                                <input type="file" accept="image/*" onchange="updateSourceImage('${item.name}', this.files[0])" class="hidden">
+                            </label>
+                            <input type="text" value="${item.image || ''}" placeholder="Image URL" onchange="updateSourceImageUrl('${item.name}', this.value)" class="w-24 px-2 text-[10px] text-gray-700 outline-none">
+                        </div>
+                        <button onclick="toggleInclude('${item.name}')" class="flex items-center space-x-1 focus:outline-none">
+                            <span class="text-[9px] uppercase font-bold ${item.included ? 'text-green-600' : 'text-gray-400'}">${item.included ? 'Include' : 'Exclude'}</span>
+                            <div class="w-6 h-3 bg-gray-200 rounded-full relative transition-colors duration-200 ${item.included ? 'bg-green-100' : ''}">
+                                <div class="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${item.included ? 'translate-x-3' : ''}"></div>
+                            </div>
+                        </button>
+                    </div>
+                `;
+
+                row.addEventListener('dragstart', () => { row.classList.add('dragging-rem'); row.classList.add('bg-blue-50'); });
+                row.addEventListener('dragend', () => { row.classList.remove('dragging-rem'); row.classList.remove('bg-blue-50'); updatePreview(); });
+
+                remainingList.appendChild(row);
+            });
+        }
+
+        remainingList.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const dragging = document.querySelector('.dragging-rem');
+            if (!dragging) return;
+            const after = [...remainingList.querySelectorAll('div[draggable="true"]:not(.dragging-rem)')].find(c => e.clientY < c.getBoundingClientRect().top + c.offsetHeight/2);
+            if (after) {
+                remainingList.insertBefore(dragging, after);
+            } else {
+                remainingList.appendChild(dragging);
+            }
+            
+            const newOrderNames = [...remainingList.querySelectorAll('div[draggable="true"]')].map(el => el.dataset.name);
+            const reorderedData = [];
+            newOrderNames.forEach(name => {
+                const found = sourceValuesData.find(v => v.name === name);
+                if (found) reorderedData.push(found);
+            });
+            const currentAssigned = getAssignedValues();
+            sourceValuesData.forEach(v => {
+                if (currentAssigned.has(v.name.toLowerCase())) reorderedData.push(v);
+            });
+            sourceValuesData = reorderedData;
+        });
+
+        function toggleInclude(name) {
+            const item = sourceValuesData.find(v => v.name === name);
+            if (item) {
+                item.included = !item.included;
+                renderRemainingBox();
+                updatePreview();
+            }
+        }
+
+        function normalizeColor(value) {
+            const v = (value || '').trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) return v;
+            if (/^#[0-9a-fA-F]{3}$/.test(v)) return '#' + v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+            return null;
+        }
+
+        function updateSourceColor(name, color) {
+            const normalized = normalizeColor(color) || '#cccccc';
+            const item = sourceValuesData.find(v => v.name === name);
+            if (item) item.color = normalized;
+            document.querySelectorAll('.value-row').forEach(row => {
+                const input = row.querySelector('.value-input');
+                if (input && input.value.trim().toLowerCase() === name.toLowerCase()) {
+                    row.dataset.color = normalized;
+                    const picker = row.querySelector('.value-color-input');
+                    const text = row.querySelector('.value-color-text');
+                    const dot = row.querySelector('.value-color-dot');
+                    if (picker) picker.value = normalized;
+                    if (text) text.value = normalized;
+                    if (dot) dot.style.background = normalized;
+                }
+            });
+            renderRemainingBox();
+            updatePreview();
+        }
+
+        function updateSourceImageUrl(name, url) {
+            const item = sourceValuesData.find(v => v.name === name);
+            if (item) item.image = (url || '').trim();
+            document.querySelectorAll('.value-row').forEach(row => {
+                const input = row.querySelector('.value-input');
+                if (input && input.value.trim().toLowerCase() === name.toLowerCase()) {
+                    row.dataset.image = (url || '').trim();
+                    const text = row.querySelector('.value-image-text');
+                    const preview = row.querySelector('.value-image-preview');
+                    if (text) text.value = (url || '').trim();
+                    if (preview) preview.innerHTML = item && item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>`;
+                }
+            });
+            renderRemainingBox();
+            updatePreview();
+        }
+
+        function updateSourceImage(name, file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => updateSourceImageUrl(name, reader.result);
+            reader.readAsDataURL(file);
+        }
+
+        const previewCountDataset = [3, 5, 15, 35, 100, 160, 1001, 5023, 10034, 61002, 200001, 941321, 450000, 789123, 12500, 88000];
+        
+        function getRandomCount(isSmall = false) {
+            if (isSmall) {
+                const smallOnes = previewCountDataset.filter(n => n < 1000);
+                return smallOnes[Math.floor(Math.random() * smallOnes.length)];
+            }
+            return previewCountDataset[Math.floor(Math.random() * previewCountDataset.length)];
+        }
+
+        function formatCount(num) {
+            return num.toLocaleString();
+        }
+
+        function validateGroupNames() {
+            const groups = [...document.querySelectorAll('.group-row')];
+            const groupedByName = new Map();
+
+            groups.forEach(group => {
+                const shell = group.querySelector('.group-shell');
+                const input = group.querySelector('.group-name-input');
+                const name = (input?.value || '').trim().toLowerCase();
+                shell?.classList.remove('border-red-300', 'bg-red-50/40');
+                input?.classList.remove('text-red-600', 'placeholder-red-300');
+                if (input) input.style.boxShadow = '';
+                if (!name) return;
+                if (!groupedByName.has(name)) groupedByName.set(name, []);
+                groupedByName.get(name).push(group);
+            });
+
+            const duplicateNames = [...groupedByName.entries()].filter(([, items]) => items.length > 1);
+            if (!duplicateNames.length) {
+                groupNameWarning.classList.add('hidden');
+                groupNameWarning.textContent = '';
+                return true;
+            }
+
+            const labels = [];
+            duplicateNames.forEach(([name, items]) => {
+                labels.push(name);
+                items.forEach(group => {
+                    const shell = group.querySelector('.group-shell');
+                    const input = group.querySelector('.group-name-input');
+                    shell?.classList.add('border-red-300', 'bg-red-50/40');
+                    input?.classList.add('text-red-600', 'placeholder-red-300');
+                    if (input) input.style.boxShadow = 'inset 0 -1px 0 rgba(220,38,38,0.18)';
+                });
+            });
+
+            const prettyNames = labels.map(name => `"${name}"`).join(', ');
+            groupNameWarning.textContent = `Group name must be unique. Please rename duplicate group ${labels.length > 1 ? 'names' : 'name'}: ${prettyNames}.`;
+            groupNameWarning.classList.remove('hidden');
+            return false;
+        }
+
+        function updatePreview() {
+            const isSingle = optionSelect.value === 'single';
+            const mainLabel = labelInput.value || 'TAG';
+            const hideChildren = hideMergedCheckbox.checked && filterSelect.value === 'merged';
+            const isColorSwatchMode = filterSelect.value === 'merged' && displayTypeSelect.value === 'Color Swatch';
+            const isImageSwatchMode = filterSelect.value === 'merged' && displayTypeSelect.value === 'Image Swatch';
+            const isSwatchTextMode = filterSelect.value === 'merged' && displayTypeSelect.value === 'Swatch Text';
+            const isSwatchMode = isColorSwatchMode || isImageSwatchMode || isSwatchTextMode;
+            const groups = [...document.querySelectorAll('.group-row')];
+
+            let html = `
+                <div class="flex items-center text-[12px] font-bold text-gray-800 space-x-2 cursor-pointer mb-2" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('-rotate-90')">
+                    <i class="fas fa-chevron-down text-[10px] transition-transform"></i>
+                    <span class="uppercase">${mainLabel}</span>
+                </div>
+                <div class="ml-4 space-y-2 preview-content">
+            `;
+
+            groups.forEach((group) => {
+                const name = group.querySelector('.group-name-input').value || 'Group Name';
+                const groupColor = group.dataset.color || '#d1d5db';
+                const valueRows = [...group.querySelectorAll('.value-row')].filter(row => row.querySelector('.value-input').value.trim() !== '');
+                const groupCount = formatCount(getRandomCount(false));
+                
+                html += `
+                    <div class="group-preview-item">
+                        <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative mb-1 group-preview-head ${isSwatchMode ? 'rounded-lg px-1.5 py-1 hover:bg-blue-50/70 transition-colors' : ''}">
+                            ${isSwatchMode ? `<button type="button" class="preview-group-swatch w-5 h-5 rounded-full border-2 border-white shadow ring-1 ring-gray-300 flex-shrink-0 transition-all hover:scale-110 hover:ring-blue-500" style="background: ${groupColor}" title="${name}"></button>` : `<input type="checkbox" class="preview-group-cb w-3 h-3 rounded-sm border-gray-300 flex-shrink-0">`}
+                            <div class="flex-1 flex justify-between items-center cursor-pointer overflow-hidden pr-2" onclick="if(!${hideChildren}){this.parentElement.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('-rotate-90')}">
+                                <div class="flex items-center space-x-2 truncate">
+                                    <span class="font-bold truncate text-gray-900 ${isSwatchMode ? 'group-hover-head:text-blue-700' : ''}">${name}</span>
+                                </div>
+                                <div class="flex items-center space-x-1 flex-shrink-0">
+                                    <span class="text-[10px] text-gray-400 font-normal">(${groupCount})</span>
+                                    <i class="fas fa-chevron-down chevron text-[8px] text-gray-400 transition-transform ${hideChildren ? 'hidden' : ''}"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ml-5 mt-1 ${hideChildren ? 'hidden' : ''} ${isSwatchMode ? (isSwatchTextMode ? 'grid grid-cols-1 gap-2 max-w-[220px]' : 'grid grid-cols-4 gap-1.5 justify-items-start max-w-[188px]') : 'space-y-1'}">
+                `;
+                valueRows.forEach(row => {
+                    const valName = row.querySelector('.value-input').value.trim();
+                    const valColor = row.dataset.color || '#d1d5db';
+                    const valImage = row.dataset.image || '';
+                    const valCount = formatCount(getRandomCount(true));
+                    html += isSwatchMode ? `
+                        <div class="relative group swatch-container ${isSwatchTextMode ? 'grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 w-full max-w-[220px] rounded-lg border border-gray-200 bg-white px-2.5 py-2 hover:border-blue-400 hover:bg-blue-50/40 hover:shadow-sm transition-all cursor-pointer' : 'w-10 h-10 flex items-center justify-center rounded-xl border border-transparent hover:border-blue-300 hover:bg-blue-50/60 transition-all cursor-pointer'}" title="${valName} (${valCount})">
+                            <div class="swatch-circle w-7 h-7 rounded-full border-2 border-white shadow ring-1 ring-gray-300 overflow-hidden transition-all group-hover:scale-110 group-hover:ring-blue-500 group-hover:z-10 ${isSwatchTextMode ? 'flex-shrink-0' : ''}" style="background:${isImageSwatchMode ? '#f3f4f6' : valColor}">
+                                ${isImageSwatchMode ? (valImage ? `<img src="${valImage}" class="w-full h-full object-cover">` : `<div class='w-full h-full bg-gray-100'></div>`) : ''}
+                            </div>
+                            ${isSwatchTextMode ? `<span class="text-[10px] font-medium text-gray-700 truncate">${valName}</span><span class="text-[9px] text-gray-400">(${valCount})</span>` : ''}
+                        </div>
+                    ` : `
+                        <div class="text-[10px] text-gray-500 flex items-center space-x-2 relative pr-10">
+                            <input type="checkbox" class="preview-val-cb w-2.5 h-2.5 rounded-sm border-gray-200 flex-shrink-0">
+                            <span class="truncate mr-2">${valName}</span>
+                            <span class="absolute right-[2px] text-[9px] text-gray-400">(${valCount})</span>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            });
+
+            if (filterSelect.value === 'merged') {
+                const assigned = getAssignedValues();
+                const remainingItems = sourceValuesData.filter(item => !assigned.has(item.name.toLowerCase()) && item.included);
+                if (isSwatchMode && remainingItems.length) {
+                    html += `
+                        <div class="pt-4 mt-4 border-t-2 border-gray-200">
+                            <div class="${isSwatchTextMode ? 'space-y-2' : 'grid grid-cols-4 gap-1.5 justify-items-start'}">
+                    `;
+                    remainingItems.forEach(item => {
+                        const remainingCount = formatCount(getRandomCount(true));
+                        html += `
+                            <div class="relative group swatch-container ${isSwatchTextMode ? 'grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 w-full min-w-[210px] rounded-lg border border-gray-200 bg-white px-2.5 py-2 hover:border-blue-400 hover:bg-blue-50/40 hover:shadow-sm transition-all cursor-pointer' : 'w-10 h-10 flex items-center justify-center rounded-xl border border-transparent hover:border-blue-300 hover:bg-blue-50/60 transition-all cursor-pointer'}" title="${item.name} (${remainingCount})">
+                                <div class="swatch-circle w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-gray-300 transition-all group-hover:scale-110 group-hover:ring-blue-500 group-hover:z-10 overflow-hidden ${isSwatchTextMode ? 'flex-shrink-0' : ''}" style="background:${isImageSwatchMode ? '#f3f4f6' : (item.color || '#d1d5db')}">
+                                    ${isImageSwatchMode ? ((item.image || '') ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<div class='w-full h-full bg-gray-100'></div>`) : ''}
+                                </div>
+                                ${isSwatchTextMode ? `<span class="text-[10px] font-medium text-gray-700 truncate">${item.name}</span><span class="text-[9px] text-gray-400">(${remainingCount})</span>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += `</div></div>`;
+                } else {
+                    remainingItems.forEach(item => {
+                        const itemCount = formatCount(getRandomCount(false));
+                        html += `
+                            <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative">
+                                <input type="checkbox" class="preview-group-cb w-3 h-3 rounded-sm border-gray-300 flex-shrink-0">
+                                <div class="flex-1 flex justify-between items-center overflow-hidden pr-2">
+                                    <span class="font-medium truncate mr-2">${item.name}</span>
+                                    <span class="text-[10px] text-gray-400 font-normal flex-shrink-0">(${itemCount})</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            previewBox.innerHTML = html + `</div>`;
+
+            const allGroupCbs = previewBox.querySelectorAll('.preview-group-cb');
+            const allGroupSwatches = previewBox.querySelectorAll('.preview-group-swatch');
+
+            function clearOtherGroupSelections(currentItem) {
+                previewBox.querySelectorAll('.group-preview-item').forEach(otherItem => {
+                    if (otherItem === currentItem) return;
+                    const otherCb = otherItem.querySelector('.preview-group-cb');
+                    if (otherCb) otherCb.checked = false;
+                    otherItem.classList.remove('active-group');
+                    otherItem.querySelector('.group-preview-head')?.classList.remove('bg-blue-50', 'ring-1', 'ring-blue-200');
+                    otherItem.querySelector('.preview-group-swatch')?.classList.remove('ring-blue-600', 'ring-[3px]', 'scale-110');
+                    otherItem.querySelectorAll('.preview-val-cb').forEach(c => c.checked = false);
+                    otherItem.querySelectorAll('.swatch-circle').forEach(s => s.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]'));
+                    otherItem.querySelectorAll('.swatch-container').forEach(s => s.classList.remove('border-blue-500', 'shadow-md', 'bg-blue-50'));
+                });
+            }
+
+            function toggleGroupItem(item, forceState = null) {
+                const cb = item.querySelector('.preview-group-cb');
+                const swatchBtn = item.querySelector('.preview-group-swatch');
+                const head = item.querySelector('.group-preview-head');
+                const currentlyActive = item.classList.contains('active-group') || cb?.checked;
+                const nextState = forceState !== null ? forceState : !currentlyActive;
+
+                if (nextState && isSingle) clearOtherGroupSelections(item);
+
+                if (cb) cb.checked = nextState;
+                item.classList.toggle('active-group', nextState);
+                head?.classList.toggle('bg-blue-50', nextState);
+                head?.classList.toggle('ring-1', nextState);
+                head?.classList.toggle('ring-blue-200', nextState);
+                swatchBtn?.classList.toggle('ring-blue-600', nextState);
+                swatchBtn?.classList.toggle('ring-[3px]', nextState);
+                swatchBtn?.classList.toggle('scale-110', nextState);
+
+                item.querySelectorAll('.preview-val-cb').forEach(c => c.checked = nextState);
+                item.querySelectorAll('.swatch-circle').forEach(s => {
+                    if(nextState) s.classList.add('ring-blue-600', 'scale-110', 'ring-[3px]');
+                    else s.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
+                });
+                item.querySelectorAll('.swatch-container').forEach(s => {
+                    if(nextState) s.classList.add('border-blue-500', 'shadow-md', 'bg-blue-50');
+                    else s.classList.remove('border-blue-500', 'shadow-md', 'bg-blue-50');
+                });
+            }
+
+            allGroupCbs.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const item = cb.closest('.group-preview-item');
+                    if (item) toggleGroupItem(item, cb.checked);
+                });
+            });
+
+            allGroupSwatches.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const item = btn.closest('.group-preview-item');
+                    if (item) toggleGroupItem(item);
+                });
+            });
+
+            previewBox.querySelectorAll('.preview-val-cb').forEach(vCb => {
+                vCb.addEventListener('change', () => {
+                    const item = vCb.closest('.group-preview-item');
+                    const parent = item.querySelector('.preview-group-cb');
+                    parent.checked = [...item.querySelectorAll('.preview-val-cb')].some(c => c.checked);
+                });
+            });
+
+            previewBox.querySelectorAll('.swatch-container').forEach(container => {
+                container.addEventListener('click', () => {
+                    const isActive = container.classList.contains('border-blue-500') || container.querySelector('.swatch-circle')?.classList.contains('ring-blue-600');
+                    if (isSingle) {
+                        previewBox.querySelectorAll('.swatch-container').forEach(other => {
+                            other.classList.remove('border-blue-500', 'bg-blue-50');
+                            other.querySelector('.swatch-circle')?.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
+                        });
+                    }
+                    const circle = container.querySelector('.swatch-circle');
+                    if (isActive && !isSingle) {
+                        container.classList.remove('border-blue-500', 'bg-blue-50');
+                        circle?.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
+                    } else {
+                        container.classList.add('border-blue-500', 'bg-blue-50');
+                        circle?.classList.add('ring-blue-600', 'scale-110', 'ring-[3px]');
+                    }
+                });
+            });
+        }
+
+        function addValue(btn) {
+            const list = btn.closest('.group-row').querySelector('.value-list-container');
+            const row = document.createElement('div');
+            row.className = 'value-row flex items-center space-x-2 mt-2 ml-10';
+            row.draggable = true;
+            row.innerHTML = `
+                <i class="fas fa-ellipsis-v text-gray-300 text-[10px] cursor-grab"></i>
+                <div class="flex-1 bg-white border border-gray-200 rounded px-2 py-1 flex items-center shadow-sm relative gap-2">
+                    <div class="value-color-wrap hidden items-center border border-gray-300 rounded-md bg-white h-7 overflow-hidden flex-shrink-0">
+                        <button type="button" class="value-color-trigger w-7 h-7 flex items-center justify-center border-r border-gray-200 bg-gray-50">
+                            <span class="value-color-dot w-4 h-4 rounded-full border border-gray-300 block bg-[#d1d5db]"></span>
+                        </button>
+                        <input type="text" value="#d1d5db" class="value-color-text w-20 px-2 text-[10px] text-gray-700 outline-none" />
+                        <input type="color" value="#d1d5db" class="value-color-input absolute opacity-0 pointer-events-none w-0 h-0">
+                    </div>
+                    <div class="value-image-wrap hidden items-center border border-gray-300 rounded-md bg-white h-7 overflow-hidden flex-shrink-0">
+                        <label class="value-image-trigger w-7 h-7 flex items-center justify-center border-r border-gray-200 bg-gray-50 cursor-pointer overflow-hidden">
+                            <span class="value-image-preview w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>
+                            <input type="file" accept="image/*" class="value-image-file hidden">
+                        </label>
+                        <input type="text" value="" placeholder="Image URL" class="value-image-text w-24 px-2 text-[10px] text-gray-700 outline-none" />
+                    </div>
+                    <input type="text" placeholder="Search or type..." class="value-input flex-1 text-xs border-none focus:ring-0 p-0 outline-none" />
+                    <div class="val-dropdown hidden absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b shadow-lg z-20 max-h-40 overflow-y-auto">
+                        <div class="dropdown-list"></div>
+                    </div>
+                    <button class="rm-v text-gray-300 hover:text-red-500 ml-1"><i class="fas fa-times text-[10px]"></i></button>
+                </div>
+            `;
+            list.appendChild(row);
+
+            const input = row.querySelector('.value-input');
+            const dropdown = row.querySelector('.val-dropdown');
+            const dList = row.querySelector('.dropdown-list');
+            const colorWrap = row.querySelector('.value-color-wrap');
+            const colorInput = row.querySelector('.value-color-input');
+            const colorText = row.querySelector('.value-color-text');
+            const colorDot = row.querySelector('.value-color-dot');
+            const colorTrigger = row.querySelector('.value-color-trigger');
+            const imageWrap = row.querySelector('.value-image-wrap');
+            const imageFile = row.querySelector('.value-image-file');
+            const imageText = row.querySelector('.value-image-text');
+            const imagePreview = row.querySelector('.value-image-preview');
+
+            const populate = (term) => {
+                const alreadySelectedInThisGroup = new Set([...btn.closest('.group-row').querySelectorAll('.value-input')].map(i => i.value.trim().toLowerCase()));
+                const filtered = sourceValuesData.map(s => s.name).filter(v => {
+                    const matchesSearch = v.toLowerCase().includes(term.toLowerCase());
+                    const isNotSelectedInThisGroup = !alreadySelectedInThisGroup.has(v.toLowerCase());
+                    return matchesSearch && isNotSelectedInThisGroup;
+                });
+                
+                dList.innerHTML = filtered.map(v => `<div class="p-2 hover:bg-gray-100 text-[10px] cursor-pointer border-b border-gray-50">${v}</div>`).join('');
+                if (filtered.length === 0) dList.innerHTML = '<div class="p-2 text-[10px] text-gray-400">No values found</div>';
+            };
+
+            function syncValueAsset() {
+                const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                row.dataset.color = (match && match.color) || row.dataset.color || colorInput.value || '#d1d5db';
+                row.dataset.image = (match && match.image) || row.dataset.image || imageText.value || '';
+                colorInput.value = row.dataset.color || '#d1d5db';
+                colorText.value = row.dataset.color || '#d1d5db';
+                colorDot.style.background = row.dataset.color || '#d1d5db';
+                imageText.value = row.dataset.image || '';
+                imagePreview.innerHTML = row.dataset.image ? `<img src="${row.dataset.image}" class="w-full h-full object-cover">` : `<span class="w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>`;
+                colorWrap.classList.toggle('hidden', !isColorMode());
+                colorWrap.classList.toggle('flex', isColorMode());
+                imageWrap.classList.toggle('hidden', !isImageMode());
+                imageWrap.classList.toggle('flex', isImageMode());
+            }
+
+            input.addEventListener('focus', () => { dropdown.classList.remove('hidden'); populate(input.value); });
+            input.addEventListener('input', () => { populate(input.value); syncValueAsset(); updatePreview(); renderRemainingBox(); });
+            dList.addEventListener('click', (e) => { 
+                const item = e.target.closest('.cursor-pointer');
+                if(item && !item.classList.contains('text-gray-400')) { 
+                    input.value = item.textContent; 
+                    const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                    row.dataset.color = (match && match.color) || row.dataset.color || colorInput.value;
+                    row.dataset.image = (match && match.image) || row.dataset.image || imageText.value;
+                    colorInput.value = row.dataset.color || '#d1d5db';
+                    dropdown.classList.add('hidden'); 
+                    syncValueAsset();
+                    updatePreview();
+                    renderRemainingBox();
+                } 
+            });
+            colorTrigger.addEventListener('click', () => colorInput.click());
+            colorInput.addEventListener('input', () => {
+                row.dataset.color = colorInput.value;
+                colorText.value = colorInput.value;
+                colorDot.style.background = colorInput.value;
+                const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                if (match) match.color = colorInput.value;
+                renderRemainingBox();
+                updatePreview();
+            });
+            colorText.addEventListener('change', () => {
+                const normalized = normalizeColor(colorText.value);
+                if (!normalized) {
+                    colorText.value = row.dataset.color || '#d1d5db';
+                    return;
+                }
+                row.dataset.color = normalized;
+                colorInput.value = normalized;
+                colorText.value = normalized;
+                colorDot.style.background = normalized;
+                const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                if (match) match.color = normalized;
+                renderRemainingBox();
+                updatePreview();
+            });
+            imageFile.addEventListener('change', () => {
+                if (!imageFile.files[0]) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    row.dataset.image = reader.result;
+                    imageText.value = reader.result;
+                    imagePreview.innerHTML = `<img src="${reader.result}" class="w-full h-full object-cover">`;
+                    const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                    if (match) match.image = reader.result;
+                    renderRemainingBox();
+                    updatePreview();
+                };
+                reader.readAsDataURL(imageFile.files[0]);
+            });
+            imageText.addEventListener('change', () => {
+                row.dataset.image = imageText.value.trim();
+                imagePreview.innerHTML = row.dataset.image ? `<img src="${row.dataset.image}" class="w-full h-full object-cover">` : `<span class="w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>`;
+                const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                if (match) match.image = row.dataset.image;
+                renderRemainingBox();
+                updatePreview();
+            });
+            document.addEventListener('click', (e) => { if(!row.contains(e.target)) dropdown.classList.add('hidden'); });
+            row.querySelector('.rm-v').addEventListener('click', () => { row.remove(); renderRemainingBox(); updatePreview(); });
+            
+            row.addEventListener('dragstart', () => row.classList.add('dragging'));
+            row.addEventListener('dragend', () => { row.classList.remove('dragging'); updatePreview(); });
+            list.addEventListener('dragover', (e) => { e.preventDefault(); const dragging = document.querySelector('.dragging'); if(!dragging || !list.contains(dragging)) return; const after = [...list.querySelectorAll('.value-row:not(.dragging)')].find(c => e.clientY < c.getBoundingClientRect().top + c.offsetHeight/2); list.insertBefore(dragging, after); });
+
+            syncValueAsset();
+            input.focus();
+            updatePreview();
+        }
+
+        function addGroup() {
+            let list = document.getElementById('group-list-container');
+            let addC = document.getElementById('add-group-btn-container');
+            if (!list) {
+                list = document.createElement('div');
+                list.id = 'group-list-container';
+                list.className = 'space-y-4';
+                dynamicConfigArea.appendChild(list);
+                list.addEventListener('dragover', (e) => { e.preventDefault(); const dragging = document.querySelector('.dragging-g'); if(!dragging) return; const after = [...list.querySelectorAll('.group-row:not(.dragging-g)')].find(c => e.clientY < c.getBoundingClientRect().top + c.offsetHeight/2); list.insertBefore(dragging, after); });
+            }
+            if (!addC) {
+                addC = document.createElement('div');
+                addC.id = 'add-group-btn-container';
+                addC.className = 'pt-1 flex justify-start';
+                addC.innerHTML = `<button class="px-3 py-1.5 bg-white border border-gray-300 rounded text-[11px] font-bold text-gray-900 shadow-sm hover:bg-gray-50 flex items-center space-x-2"><i class="fas fa-plus text-[10px]"></i><span>Add Group</span></button>`;
+                addC.querySelector('button').onclick = addGroup;
+                dynamicConfigArea.appendChild(addC);
+            }
+
+            const gRow = document.createElement('div');
+            gRow.className = 'group-row space-y-2';
+            gRow.draggable = true;
+            const swatchMode = isVisualSwatchMode();
+            const groupColor = gRow.dataset.color || '#d1d5db';
+
+            gRow.innerHTML = `
+                <div class="flex flex-col bg-white border border-gray-200 rounded p-2 shadow-sm transition-all duration-200 group-shell">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-chevron-down text-[10px] text-gray-400 cursor-pointer transition-transform" onclick="this.closest('.group-row').querySelector('.value-list-container').classList.toggle('hidden'); this.closest('.group-row').querySelector('.add-v-btn').parentElement.classList.toggle('hidden'); this.classList.toggle('-rotate-90')"></i>
+                        <i class="fas fa-ellipsis-v text-gray-300 cursor-move text-xs"></i>
+                        
+                        <div class="group-color-swatch-wrap ${swatchMode ? 'flex' : 'hidden'} items-center mr-1">
+                            <button type="button" class="w-6 h-6 rounded-full border border-gray-300 shadow-sm relative overflow-hidden" style="background: ${groupColor}" onclick="this.nextElementSibling.click()">
+                            </button>
+                            <input type="color" class="absolute opacity-0 w-0 h-0 group-color-picker" value="${groupColor}" oninput="this.previousElementSibling.style.background = this.value; this.closest('.group-row').dataset.color = this.value; updatePreview();">
+                        </div>
+
+                        <input type="text" placeholder="Group Name" class="group-name-input flex-1 text-sm border-none focus:ring-0 p-0 outline-none font-semibold" />
+                        <button class="rm-g text-gray-400 hover:text-red-500"><i class="far fa-trash-alt text-xs"></i></button>
+                    </div>
+                </div>
+                <div class="value-list-container"></div>
+                <div class="flex justify-start ml-10"><button class="add-v-btn flex items-center space-x-1 px-2 py-1 bg-white border border-gray-200 rounded text-[9px] font-bold text-gray-900 shadow-sm hover:bg-gray-50"><i class="fas fa-plus scale-75"></i><span class="bt">Add Values to Group Name</span></button></div>
+            `;
+            gRow.dataset.color = groupColor;
+            list.appendChild(gRow);
+            dynamicConfigArea.appendChild(addC);
+
+            const gShell = gRow.querySelector('.group-shell');
+            const gColorWrap = gRow.querySelector('.group-color-swatch-wrap');
+
+            gRow.addEventListener('dragstart', () => gRow.classList.add('dragging-g'));
+            gRow.addEventListener('dragend', () => { gRow.classList.remove('dragging-g'); updatePreview(); });
+
+            const gInp = gRow.querySelector('.group-name-input');
+            gInp.addEventListener('input', () => {
+                gRow.querySelector('.bt').textContent = `Add Values to ${gInp.value || 'Group Name'}`;
+                validateGroupNames();
+                updatePreview();
+            });
+            gRow.querySelector('.add-v-btn').addEventListener('click', () => addValue(gRow.querySelector('.add-v-btn')));
+            gRow.querySelector('.rm-g').addEventListener('click', () => {
+                gRow.remove();
+                if (!list.children.length) {
+                    list.remove();
+                }
+                validateGroupNames();
+                renderRemainingBox();
+                updatePreview();
+            });
+
+            gInp.focus();
+            updatePreview();
+        }
+
+        const displayTypeSelect = document.getElementById('display-type-select');
+
+        function ensureMergedArea() {
+            let addC = document.getElementById('add-group-btn-container');
+            if (!addC) {
+                addC = document.createElement('div');
+                addC.id = 'add-group-btn-container';
+                addC.className = 'pt-1 flex justify-start';
+                addC.innerHTML = `<button class="px-3 py-1.5 bg-white border border-gray-300 rounded text-[11px] font-bold text-gray-900 shadow-sm hover:bg-gray-50 flex items-center space-x-2"><i class="fas fa-plus text-[10px]"></i><span>Add Group</span></button>`;
+                addC.querySelector('button').onclick = addGroup;
+                dynamicConfigArea.appendChild(addC);
+            }
+        }
+
+        function syncDisplayTypeOptions() {
+            const allowedAfterFilterChange = ['Check List', 'Swatch Text', 'Color Swatch', 'Image Swatch'];
+            [...displayTypeSelect.options].forEach(option => {
+                const isAllowed = !filterValueChangedOnce || allowedAfterFilterChange.includes(option.value);
+                option.disabled = !isAllowed;
+                option.hidden = !isAllowed;
+            });
+
+            if (filterValueChangedOnce && !allowedAfterFilterChange.includes(displayTypeSelect.value)) {
+                displayTypeSelect.value = 'Check List';
+            }
+        }
+
+        function updateVisibility() {
+            const v = filterSelect.value;
+            const o = optionSelect.value;
+            const isSwatch = isVisualSwatchMode();
+
+            syncDisplayTypeOptions();
+            displayTypeSelect.disabled = false;
+            displayTypeSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+
+            description.textContent = descriptions[v];
+            
+            if (v !== 'merged') {
+                dynamicConfigArea.innerHTML = '';
+                groupNameWarning.classList.add('hidden');
+                groupNameWarning.textContent = '';
+                hideMergedCheckbox.checked = false;
+            } else {
+                ensureMergedArea();
+                document.querySelectorAll('.group-row').forEach(grow => {
+                    const wrap = grow.querySelector('.group-color-swatch-wrap');
+                    if (wrap) {
+                        wrap.classList.toggle('hidden', !isSwatch);
+                        wrap.classList.toggle('flex', isSwatch);
+                    }
+                });
+            }
+
+            hideMergedContainer.classList.toggle('hidden', v !== 'merged');
+            remainingContainer.classList.toggle('hidden', v !== 'merged');
+            document.querySelectorAll('.value-row').forEach(row => {
+                const colorWrap = row.querySelector('.value-color-wrap');
+                const imageWrap = row.querySelector('.value-image-wrap');
+                if (colorWrap) {
+                    colorWrap.classList.toggle('hidden', !isColorMode());
+                    colorWrap.classList.toggle('flex', isColorMode());
+                }
+                if (imageWrap) {
+                    imageWrap.classList.toggle('hidden', !isImageMode());
+                    imageWrap.classList.toggle('flex', isImageMode());
+                }
+                const input = row.querySelector('.value-input');
+                const match = sourceValuesData.find(val => val.name.toLowerCase() === (input?.value || '').trim().toLowerCase());
+                if (match) {
+                    row.dataset.color = match.color || row.dataset.color || '#d1d5db';
+                    row.dataset.image = match.image || row.dataset.image || '';
+                    const colorInput = row.querySelector('.value-color-input');
+                    const colorText = row.querySelector('.value-color-text');
+                    const colorDot = row.querySelector('.value-color-dot');
+                    const imageText = row.querySelector('.value-image-text');
+                    const imagePreview = row.querySelector('.value-image-preview');
+                    if (colorInput) colorInput.value = row.dataset.color;
+                    if (colorText) colorText.value = row.dataset.color;
+                    if (colorDot) colorDot.style.background = row.dataset.color;
+                    if (imageText) imageText.value = row.dataset.image;
+                    if (imagePreview) imagePreview.innerHTML = row.dataset.image ? `<img src="${row.dataset.image}" class="w-full h-full object-cover">` : `<span class="w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>`;
+                }
+            });
+            if (v === 'merged') renderRemainingBox();
+            validateGroupNames();
+
+            let mi = document.getElementById('merged-logic-info');
+            if (v === 'merged') {
+                matchOptions.classList.add('hidden');
+                if (!mi) { mi = document.createElement('p'); mi.id = 'merged-logic-info'; mi.className = 'text-[11px] text-gray-500 italic py-1'; matchOptions.parentNode.insertBefore(mi, matchOptions.nextSibling); }
+                mi.textContent = o === 'single' ? 'Single mode lets customers choose one merged group at a time.' : '';
+                mi.classList.toggle('hidden', o !== 'single');
+            } else { mi?.remove(); matchOptions.classList.toggle('hidden', o === 'single'); }
+
+            updatePreview();
+        }
+
+        const sourceSelect = document.getElementById('source-select');
+
+        sourceSelect.addEventListener('change', () => {
+            labelInput.value = sourceSelect.value;
+            updatePreview();
+        });
+
+        filterSelect.addEventListener('change', () => {
+            filterValueChangedOnce = true;
+            updateVisibility();
+        });
+        optionSelect.addEventListener('change', updateVisibility);
+        displayTypeSelect.addEventListener('change', updateVisibility);
+        labelInput.addEventListener('input', updatePreview);
+        hideMergedCheckbox.addEventListener('change', updatePreview);
+
+        updateVisibility();
+    </script>
+</body>
+</html>
