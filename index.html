@@ -149,9 +149,16 @@
                             <label class="flex items-center text-xs text-gray-700 cursor-pointer">
                                 <input type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Collapse on Mobile
                             </label>
-                            <label id="hide-value-name-container" class="flex items-center text-xs text-gray-700 cursor-pointer hidden">
-                                <input type="checkbox" id="hide-value-name" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Hide Value name
-                            </label>
+                            <div id="hide-value-name-container" class="flex items-center space-x-2 ml-auto hidden">
+                                <span class="text-xs font-bold text-gray-700">Value name:</span>
+                                <button type="button" id="hide-name-toggle" class="flex items-center space-x-1 focus:outline-none group">
+                                    <span id="hide-name-label" class="text-[9px] uppercase font-bold text-green-600">Show</span>
+                                    <div id="hide-name-switch" class="w-6 h-3 bg-green-100 rounded-full relative transition-colors duration-200">
+                                        <div id="hide-name-knob" class="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white shadow-sm transform transition-transform duration-200 translate-x-3"></div>
+                                    </div>
+                                </button>
+                                <input type="checkbox" id="hide-value-name" class="hidden">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -278,6 +285,22 @@
         const advancedOptions = document.getElementById('advanced-options');
         const filterValuesSection = document.getElementById('filter-values-section');
         const displayTypeSelect = document.getElementById('display-type-select');
+        const hideNameToggle = document.getElementById('hide-name-toggle');
+        const hideNameLabel = document.getElementById('hide-name-label');
+        const hideNameSwitch = document.getElementById('hide-name-switch');
+        const hideNameKnob = document.getElementById('hide-name-knob');
+
+        hideNameToggle.addEventListener('click', () => {
+            hideValueNameCheckbox.checked = !hideValueNameCheckbox.checked;
+            const isHidden = hideValueNameCheckbox.checked;
+            
+            hideNameLabel.textContent = isHidden ? 'Hide' : 'Show';
+            hideNameLabel.className = `text-[9px] uppercase font-bold ${isHidden ? 'text-gray-400' : 'text-green-600'}`;
+            hideNameSwitch.className = `w-6 h-3 rounded-full relative transition-colors duration-200 ${isHidden ? 'bg-gray-200' : 'bg-green-100'}`;
+            hideNameKnob.className = `absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${isHidden ? '' : 'translate-x-3'}`;
+            
+            updatePreview();
+        });
         
         let filterValueChangedOnce = false;
         let sourceChosenOnce = false;
@@ -302,7 +325,7 @@
             'Rich Text': 'Metafield'
         };
 
-        const mergedDisabledSources = new Set(['Price','Availability','Image','True or False','Multi line text','Rich Text']);
+        const mergedDisabledSources = new Set(['Price','Availability']);
 
         const defaultSwatchPalette = ['#111827','#6b7280','#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#a16207','#84cc16','#14b8a6','#f43f5e','#7c3aed','#0f766e','#1d4ed8','#ea580c','#4b5563','#be123c'];
         let sourceValuesData = ['Cotton','Polyester','Wool','Silk','Linen','Denim','Leather','Nylon','Satin','Velvet','Cashmere','Spandex','Rayon','Canvas','Fleece','Jersey','Tweed','Suede','Mesh','Viscose'].map((v, i) => ({
