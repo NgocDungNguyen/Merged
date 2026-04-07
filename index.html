@@ -142,6 +142,16 @@
                             </div>
                         </div>
 
+                        <div id="hide-value-name-container" class="space-y-1 hidden">
+                            <div class="flex items-center gap-2">
+                                <label class="block text-xs font-medium text-gray-600">Hide Value Name</label>
+                                <button type="button" id="hide-name-toggle" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-gray-200">
+                                    <span id="hide-name-knob" aria-hidden="true" class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                                </button>
+                            </div>
+                            <input type="checkbox" id="hide-value-name" class="hidden">
+                        </div>
+
                         <div id="collapse-options" class="flex flex-wrap gap-x-6 gap-y-2">
                             <label class="flex items-center text-xs text-gray-700 cursor-pointer">
                                 <input type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Collapse on Desktop
@@ -149,16 +159,6 @@
                             <label class="flex items-center text-xs text-gray-700 cursor-pointer">
                                 <input type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Collapse on Mobile
                             </label>
-                            <div id="hide-value-name-container" class="flex items-center space-x-2 ml-auto hidden">
-                                <span class="text-xs font-bold text-gray-700">Value name:</span>
-                                <button type="button" id="hide-name-toggle" class="flex items-center space-x-1 focus:outline-none group">
-                                    <span id="hide-name-label" class="text-[9px] uppercase font-bold text-green-600">Show</span>
-                                    <div id="hide-name-switch" class="w-6 h-3 bg-green-100 rounded-full relative transition-colors duration-200">
-                                        <div id="hide-name-knob" class="absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white shadow-sm transform transition-transform duration-200 translate-x-3"></div>
-                                    </div>
-                                </button>
-                                <input type="checkbox" id="hide-value-name" class="hidden">
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -294,10 +294,10 @@
             hideValueNameCheckbox.checked = !hideValueNameCheckbox.checked;
             const isHidden = hideValueNameCheckbox.checked;
             
-            hideNameLabel.textContent = isHidden ? 'Hide' : 'Show';
-            hideNameLabel.className = `text-[9px] uppercase font-bold ${isHidden ? 'text-gray-400' : 'text-green-600'}`;
-            hideNameSwitch.className = `w-6 h-3 rounded-full relative transition-colors duration-200 ${isHidden ? 'bg-gray-200' : 'bg-green-100'}`;
-            hideNameKnob.className = `absolute top-0.5 left-0.5 w-2 h-2 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${isHidden ? '' : 'translate-x-3'}`;
+            hideNameToggle.classList.toggle('bg-blue-600', isHidden);
+            hideNameToggle.classList.toggle('bg-gray-200', !isHidden);
+            hideNameKnob.classList.toggle('translate-x-4', isHidden);
+            hideNameKnob.classList.toggle('translate-x-0', !isHidden);
             
             updatePreview();
         });
@@ -1019,7 +1019,19 @@
             advancedOptions.classList.toggle('hidden', !showAdvanced);
             filterValuesSection.classList.toggle('hidden', !showAdvanced);
 
-            hideValueNameContainer.classList.toggle('hidden', !(isMerged && ['Color Swatch','Image Swatch'].includes(displayTypeSelect.value)));
+            if (isMerged && ['Color Swatch','Image Swatch'].includes(displayTypeSelect.value)) {
+                if (hideValueNameContainer.classList.contains('hidden')) {
+                    // First time choosing swatch, default to HIDE = ON
+                    hideValueNameCheckbox.checked = true;
+                    hideNameToggle.classList.add('bg-blue-600');
+                    hideNameToggle.classList.remove('bg-gray-200');
+                    hideNameKnob.classList.add('translate-x-4');
+                    hideNameKnob.classList.remove('translate-x-0');
+                }
+                hideValueNameContainer.classList.remove('hidden');
+            } else {
+                hideValueNameContainer.classList.add('hidden');
+            }
             
             if (!showAdvanced) {
                 dynamicConfigArea.innerHTML = '';
