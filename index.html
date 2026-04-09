@@ -181,7 +181,7 @@
                     </div>
 
                     <div id="merged-type-container" class="space-y-1 hidden">
-                        <label class="block text-xs font-medium text-gray-600">Filter Mode</label>
+                        <label class="block text-xs font-medium text-gray-600">Filter mode</label>
                         <div class="relative">
                             <select id="merged-type-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 <option value="default">Default</option>
@@ -602,7 +602,7 @@
                         <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative mb-1 group-preview-head ${isSwatchMode ? 'rounded-lg px-1.5 py-1 hover:bg-blue-50/70 transition-colors' : ''}">
                             ${isSwatchMode ? 
                                 `<button type="button" class="preview-group-swatch w-5 h-5 rounded-full border-2 border-white shadow ring-1 ring-gray-300 flex-shrink-0 transition-all hover:scale-110 hover:ring-blue-500" style="background: ${groupColor}" title="${name}"></button>` : 
-                                `<input type="${isSingle ? 'radio' : 'checkbox'}" name="preview-group" class="preview-group-cb w-3.5 h-3.5 ${isSingle ? 'rounded-full' : 'rounded-sm'} border-gray-300 flex-shrink-0">`
+                                `<input type="checkbox" name="preview-group" class="preview-group-cb w-3.5 h-3.5 rounded-sm border-gray-300 flex-shrink-0">`
                             }
                             <div class="flex-1 flex justify-between items-center cursor-pointer overflow-hidden pr-2" onclick="if(!${hideChildren}){this.parentElement.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('-rotate-90')}">
                                 <div class="flex items-center space-x-2 truncate">
@@ -663,7 +663,7 @@
                         const itemCount = formatCount(getRandomCount(false));
                         html += `
                             <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative group-preview-item remaining-item">
-                                <input type="${isSingle ? 'radio' : 'checkbox'}" name="preview-group" class="preview-group-cb w-3.5 h-3.5 ${isSingle ? 'rounded-full' : 'rounded-sm'} border-gray-300 flex-shrink-0">
+                                <input type="checkbox" name="preview-group" class="preview-group-cb w-3.5 h-3.5 rounded-sm border-gray-300 flex-shrink-0">
                                 <div class="flex-1 flex justify-between items-center overflow-hidden pr-2">
                                     <span class="font-medium truncate mr-2">${item.name}</span>
                                     <span class="text-[10px] text-gray-400 font-normal flex-shrink-0">(${itemCount})</span>
