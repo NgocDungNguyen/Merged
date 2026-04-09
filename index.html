@@ -173,8 +173,19 @@
                             <select id="filter-value-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 <option value="all">All Filter Values</option>
                                 <option value="manually">Manually</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="merged-type-container" class="space-y-1 hidden">
+                        <label class="block text-xs font-medium text-gray-600">Merged Type</label>
+                        <div class="relative">
+                            <select id="merged-type-select" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="default">Default</option>
                                 <option value="merged">Merged Group</option>
-                                <option value="multi">Multi level</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
                                 <i class="fas fa-chevron-down text-xs"></i>
@@ -265,6 +276,8 @@
     <input type="hidden" id="source-select" value="Tag">
     <script>
         const filterSelect = document.getElementById('filter-value-select');
+        const mergedTypeSelect = document.getElementById('merged-type-select');
+        const mergedTypeContainer = document.getElementById('merged-type-container');
         const optionSelect = document.getElementById('option-select');
         const description = document.getElementById('filter-description');
         const matchOptions = document.getElementById('match-options');
@@ -335,16 +348,20 @@
             image: ''
         }));
 
+        function isMergedMode() {
+            return filterSelect.value === 'manually' && mergedTypeSelect.value === 'merged';
+        }
+
         function isColorMode() {
-            return filterSelect.value === 'merged' && displayTypeSelect.value === 'Color Swatch';
+            return isMergedMode() && displayTypeSelect.value === 'Color Swatch';
         }
 
         function isImageMode() {
-            return filterSelect.value === 'merged' && displayTypeSelect.value === 'Image Swatch';
+            return isMergedMode() && displayTypeSelect.value === 'Image Swatch';
         }
 
         function isVisualSwatchMode() {
-            return filterSelect.value === 'merged' && ['Color Swatch', 'Image Swatch'].includes(displayTypeSelect.value);
+            return isMergedMode() && ['Color Swatch', 'Image Swatch'].includes(displayTypeSelect.value);
         }
 
         function getAssignedValues() {
@@ -356,7 +373,7 @@
         }
 
         function renderRemainingBox() {
-            if (filterSelect.value !== 'merged') return;
+            if (!isMergedMode()) return;
             const assigned = getAssignedValues();
             const filtered = sourceValuesData.filter(v => !assigned.has(v.name.toLowerCase()));
             const swatchMode = isVisualSwatchMode();
@@ -555,11 +572,12 @@
 
         function updatePreview() {
             const isSingle = optionSelect.value === 'single';
+            const isMerged = isMergedMode();
             const mainLabel = labelInput.value || 'TAG';
-            const hideChildren = hideMergedCheckbox.checked && filterSelect.value === 'merged';
+            const hideChildren = hideMergedCheckbox.checked && isMerged;
             const hideNames = hideValueNameCheckbox.checked;
-            const isColorSwatchMode = filterSelect.value === 'merged' && displayTypeSelect.value === 'Color Swatch';
-            const isImageSwatchMode = filterSelect.value === 'merged' && displayTypeSelect.value === 'Image Swatch';
+            const isColorSwatchMode = isMerged && displayTypeSelect.value === 'Color Swatch';
+            const isImageSwatchMode = isMerged && displayTypeSelect.value === 'Image Swatch';
             const isSwatchMode = isColorSwatchMode || isImageSwatchMode;
             const isSwatchGrid = isSwatchMode && hideNames;
             const isSwatchTextRow = isSwatchMode && !hideNames;
@@ -580,9 +598,12 @@
                 const groupCount = formatCount(getRandomCount(false));
                 
                 html += `
-                    <div class="group-preview-item">
+                    <div class="group-preview-item" data-group-name="${name}">
                         <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative mb-1 group-preview-head ${isSwatchMode ? 'rounded-lg px-1.5 py-1 hover:bg-blue-50/70 transition-colors' : ''}">
-                            ${isSwatchMode ? `<button type="button" class="preview-group-swatch w-5 h-5 rounded-full border-2 border-white shadow ring-1 ring-gray-300 flex-shrink-0 transition-all hover:scale-110 hover:ring-blue-500" style="background: ${groupColor}" title="${name}"></button>` : `<input type="checkbox" class="preview-group-cb w-3 h-3 rounded-sm border-gray-300 flex-shrink-0">`}
+                            ${isSwatchMode ? 
+                                `<button type="button" class="preview-group-swatch w-5 h-5 rounded-full border-2 border-white shadow ring-1 ring-gray-300 flex-shrink-0 transition-all hover:scale-110 hover:ring-blue-500" style="background: ${groupColor}" title="${name}"></button>` : 
+                                `<input type="${isSingle ? 'radio' : 'checkbox'}" name="preview-group" class="preview-group-cb w-3.5 h-3.5 ${isSingle ? 'rounded-full' : 'rounded-sm'} border-gray-300 flex-shrink-0">`
+                            }
                             <div class="flex-1 flex justify-between items-center cursor-pointer overflow-hidden pr-2" onclick="if(!${hideChildren}){this.parentElement.nextElementSibling.classList.toggle('hidden'); this.querySelector('.chevron').classList.toggle('-rotate-90')}">
                                 <div class="flex items-center space-x-2 truncate">
                                     <span class="font-bold truncate text-gray-900 ${isSwatchMode ? 'group-hover-head:text-blue-700' : ''}">${name}</span>
@@ -601,17 +622,17 @@
                     const valImage = row.dataset.image || '';
                     const valCount = formatCount(getRandomCount(true));
                     
-                    // FIX APPLIED: Removed border, bg-white, shadow from Swatch + Text row
                     html += isSwatchMode ? `
-                        <div class="relative group swatch-container ${isSwatchTextRow ? 'grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 w-full max-w-[220px] px-2 py-1.5 hover:bg-blue-50/40 transition-all cursor-pointer rounded-md' : 'w-10 h-10 flex items-center justify-center rounded-xl border border-transparent hover:border-blue-300 hover:bg-blue-50/60 transition-all cursor-pointer'}" title="${valName} (${valCount})">
-                            <div class="swatch-circle w-7 h-7 rounded-full border-2 border-white shadow ring-1 ring-gray-300 overflow-hidden transition-all group-hover:scale-110 group-hover:ring-blue-500 group-hover:z-10 ${isSwatchTextRow ? 'flex-shrink-0' : ''}" style="background:${isImageSwatchMode ? '#f3f4f6' : valColor}">
+                        <div class="relative group swatch-container ${isSwatchTextRow ? 'grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 w-full max-w-[220px] px-2 py-1.5 hover:bg-blue-50/40 transition-all cursor-pointer rounded-md' : 'w-10 h-10 flex items-center justify-center rounded-xl border border-transparent hover:border-blue-300 hover:bg-blue-50/60 transition-all cursor-pointer'}" 
+                             data-clickable="${!isSingle}" title="${valName} (${valCount})">
+                            <div class="swatch-circle w-7 h-7 rounded-full border-2 border-white shadow ring-1 ring-gray-300 overflow-hidden transition-all ${!isSingle ? 'group-hover:scale-110 group-hover:ring-blue-500 group-hover:z-10' : ''} ${isSwatchTextRow ? 'flex-shrink-0' : ''}" style="background:${isImageSwatchMode ? '#f3f4f6' : valColor}">
                                 ${isImageSwatchMode ? (valImage ? `<img src="${valImage}" class="w-full h-full object-cover">` : `<div class='w-full h-full bg-gray-100'></div>`) : ''}
                             </div>
                             ${isSwatchTextRow ? `<span class="text-[10px] font-medium text-gray-700 truncate">${valName}</span><span class="text-[9px] text-gray-400">(${valCount})</span>` : ''}
                         </div>
                     ` : `
                         <div class="text-[10px] text-gray-500 flex items-center space-x-2 relative pr-10">
-                            <input type="checkbox" class="preview-val-cb w-2.5 h-2.5 rounded-sm border-gray-200 flex-shrink-0">
+                            ${!isSingle ? `<input type="checkbox" class="preview-val-cb w-2.5 h-2.5 rounded-sm border-gray-200 flex-shrink-0">` : ''}
                             <span class="truncate mr-2">${valName}</span>
                             <span class="absolute right-[2px] text-[9px] text-gray-400">(${valCount})</span>
                         </div>
@@ -620,19 +641,15 @@
                 html += `</div></div>`;
             });
 
-            if (filterSelect.value === 'merged') {
+            if (isMerged) {
                 const assigned = getAssignedValues();
                 const remainingItems = sourceValuesData.filter(item => !assigned.has(item.name.toLowerCase()) && item.included);
                 if (isSwatchMode && remainingItems.length) {
-                    html += `
-                        <div class="pt-4 mt-4 border-t-2 border-gray-200">
-                            <div class="${isSwatchGrid ? 'grid grid-cols-4 gap-1.5 justify-items-start' : 'space-y-2'}">
-                    `;
+                    html += `<div class="pt-4 mt-4 border-t-2 border-gray-200"><div class="${isSwatchGrid ? 'grid grid-cols-4 gap-1.5 justify-items-start' : 'space-y-2'}">`;
                     remainingItems.forEach(item => {
                         const remainingCount = formatCount(getRandomCount(true));
-                        // FIX APPLIED: Removed border, bg-white, shadow from Swatch + Text row
                         html += `
-                            <div class="relative group swatch-container ${isSwatchTextRow ? 'grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 w-full min-w-[210px] px-2 py-1.5 hover:bg-blue-50/40 transition-all cursor-pointer rounded-md' : 'w-10 h-10 flex items-center justify-center rounded-xl border border-transparent hover:border-blue-300 hover:bg-blue-50/60 transition-all cursor-pointer'}" title="${item.name} (${remainingCount})">
+                            <div class="relative group swatch-container remaining-swatch-item ${isSwatchTextRow ? 'grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-2 w-full min-w-[210px] px-2 py-1.5 hover:bg-blue-50/40 transition-all cursor-pointer rounded-md' : 'w-10 h-10 flex items-center justify-center rounded-xl border border-transparent hover:border-blue-300 hover:bg-blue-50/60 transition-all cursor-pointer'}" title="${item.name} (${remainingCount})">
                                 <div class="swatch-circle w-7 h-7 rounded-full border-2 border-white shadow-sm ring-1 ring-gray-300 transition-all group-hover:scale-110 group-hover:ring-blue-500 group-hover:z-10 overflow-hidden ${isSwatchTextRow ? 'flex-shrink-0' : ''}" style="background:${isImageSwatchMode ? '#f3f4f6' : (item.color || '#d1d5db')}">
                                     ${isImageSwatchMode ? ((item.image || '') ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<div class='w-full h-full bg-gray-100'></div>`) : ''}
                                 </div>
@@ -645,8 +662,8 @@
                     remainingItems.forEach(item => {
                         const itemCount = formatCount(getRandomCount(false));
                         html += `
-                            <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative">
-                                <input type="checkbox" class="preview-group-cb w-3 h-3 rounded-sm border-gray-300 flex-shrink-0">
+                            <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative group-preview-item remaining-item">
+                                <input type="${isSingle ? 'radio' : 'checkbox'}" name="preview-group" class="preview-group-cb w-3.5 h-3.5 ${isSingle ? 'rounded-full' : 'rounded-sm'} border-gray-300 flex-shrink-0">
                                 <div class="flex-1 flex justify-between items-center overflow-hidden pr-2">
                                     <span class="font-medium truncate mr-2">${item.name}</span>
                                     <span class="text-[10px] text-gray-400 font-normal flex-shrink-0">(${itemCount})</span>
@@ -659,91 +676,109 @@
 
             previewBox.innerHTML = html + `</div>`;
 
-            const allGroupCbs = previewBox.querySelectorAll('.preview-group-cb');
-            const allGroupSwatches = previewBox.querySelectorAll('.preview-group-swatch');
-
-            function clearOtherGroupSelections(currentItem) {
-                previewBox.querySelectorAll('.group-preview-item').forEach(otherItem => {
-                    if (otherItem === currentItem) return;
-                    const otherCb = otherItem.querySelector('.preview-group-cb');
-                    if (otherCb) otherCb.checked = false;
-                    otherItem.classList.remove('active-group');
-                    otherItem.querySelector('.group-preview-head')?.classList.remove('bg-blue-50', 'ring-1', 'ring-blue-200');
-                    otherItem.querySelector('.preview-group-swatch')?.classList.remove('ring-blue-600', 'ring-[3px]', 'scale-110');
-                    otherItem.querySelectorAll('.preview-val-cb').forEach(c => c.checked = false);
-                    otherItem.querySelectorAll('.swatch-circle').forEach(s => s.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]'));
-                    otherItem.querySelectorAll('.swatch-container').forEach(s => s.classList.remove('border-blue-500', 'shadow-md', 'bg-blue-50'));
+            // EVENT BINDING RE-REWRITTEN FOR NEW LOGIC
+            const allGroupItems = previewBox.querySelectorAll('.group-preview-item');
+            
+            function deselectAll() {
+                allGroupItems.forEach(item => {
+                    const cb = item.querySelector('.preview-group-cb');
+                    if (cb) cb.checked = false;
+                    item.classList.remove('active-group');
+                    item.querySelector('.group-preview-head')?.classList.remove('bg-blue-50', 'ring-1', 'ring-blue-200');
+                    item.querySelector('.preview-group-swatch')?.classList.remove('ring-blue-600', 'ring-[3px]', 'scale-110');
+                    item.querySelectorAll('.preview-val-cb').forEach(c => c.checked = false);
+                    item.querySelectorAll('.swatch-circle').forEach(s => s.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]'));
+                    item.querySelectorAll('.swatch-container').forEach(s => s.classList.remove('bg-blue-50'));
+                });
+                previewBox.querySelectorAll('.remaining-swatch-item').forEach(s => {
+                    s.classList.remove('bg-blue-50');
+                    s.querySelector('.swatch-circle')?.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
                 });
             }
 
-            function toggleGroupItem(item, forceState = null) {
+            allGroupItems.forEach(item => {
+                const head = item.querySelector('.group-preview-head');
                 const cb = item.querySelector('.preview-group-cb');
                 const swatchBtn = item.querySelector('.preview-group-swatch');
-                const head = item.querySelector('.group-preview-head');
-                const currentlyActive = item.classList.contains('active-group') || cb?.checked;
-                const nextState = forceState !== null ? forceState : !currentlyActive;
 
-                if (nextState && isSingle) clearOtherGroupSelections(item);
+                const handleToggle = (forceState) => {
+                    const nextState = forceState !== undefined ? forceState : (isSingle ? true : !item.classList.contains('active-group'));
+                    if (isSingle && nextState) deselectAll();
 
-                if (cb) cb.checked = nextState;
-                item.classList.toggle('active-group', nextState);
-                head?.classList.toggle('bg-blue-50', nextState);
-                head?.classList.toggle('ring-1', nextState);
-                head?.classList.toggle('ring-blue-200', nextState);
-                swatchBtn?.classList.toggle('ring-blue-600', nextState);
-                swatchBtn?.classList.toggle('ring-[3px]', nextState);
-                swatchBtn?.classList.toggle('scale-110', nextState);
+                    if (cb) cb.checked = nextState;
+                    item.classList.toggle('active-group', nextState);
+                    head?.classList.toggle('bg-blue-50', nextState);
+                    head?.classList.toggle('ring-1', nextState);
+                    head?.classList.toggle('ring-blue-200', nextState);
+                    swatchBtn?.classList.toggle('ring-blue-600', nextState);
+                    swatchBtn?.classList.toggle('ring-[3px]', nextState);
+                    swatchBtn?.classList.toggle('scale-110', nextState);
 
-                item.querySelectorAll('.preview-val-cb').forEach(c => c.checked = nextState);
-                item.querySelectorAll('.swatch-circle').forEach(s => {
-                    if(nextState) s.classList.add('ring-blue-600', 'scale-110', 'ring-[3px]');
-                    else s.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
-                });
-                item.querySelectorAll('.swatch-container').forEach(s => {
-                    if(nextState) s.classList.add('bg-blue-50');
-                    else s.classList.remove('bg-blue-50');
-                });
-            }
-
-            allGroupCbs.forEach(cb => {
-                cb.addEventListener('change', () => {
-                    const item = cb.closest('.group-preview-item');
-                    if (item) toggleGroupItem(item, cb.checked);
-                });
-            });
-
-            allGroupSwatches.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const item = btn.closest('.group-preview-item');
-                    if (item) toggleGroupItem(item);
-                });
-            });
-
-            previewBox.querySelectorAll('.preview-val-cb').forEach(vCb => {
-                vCb.addEventListener('change', () => {
-                    const item = vCb.closest('.group-preview-item');
-                    const parent = item.querySelector('.preview-group-cb');
-                    parent.checked = [...item.querySelectorAll('.preview-val-cb')].some(c => c.checked);
-                });
-            });
-
-            previewBox.querySelectorAll('.swatch-container').forEach(container => {
-                container.addEventListener('click', () => {
-                    const isActive = container.classList.contains('bg-blue-50') || container.querySelector('.swatch-circle')?.classList.contains('ring-blue-600');
-                    if (isSingle) {
-                        previewBox.querySelectorAll('.swatch-container').forEach(other => {
-                            other.classList.remove('bg-blue-50');
-                            other.querySelector('.swatch-circle')?.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
-                        });
+                    // Child behavior
+                    if (!isSingle) {
+                        item.querySelectorAll('.preview-val-cb').forEach(c => c.checked = nextState);
                     }
+                    
+                    item.querySelectorAll('.swatch-circle').forEach(s => {
+                        if(nextState) s.classList.add('ring-blue-600', 'scale-110', 'ring-[3px]');
+                        else s.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
+                    });
+                    item.querySelectorAll('.swatch-container').forEach(s => {
+                        if(nextState) s.classList.add('bg-blue-50');
+                        else s.classList.remove('bg-blue-50');
+                    });
+                };
+
+                cb?.addEventListener('change', () => handleToggle(cb.checked));
+                swatchBtn?.addEventListener('click', (e) => { e.stopPropagation(); handleToggle(); });
+                
+                // If text row swatch, allow clicking entire row
+                if (isSwatchTextRow) {
+                    head?.addEventListener('click', (e) => { if(!e.target.closest('input')) handleToggle(); });
+                }
+
+                // Child selection only in multiple mode
+                if (!isSingle) {
+                    item.querySelectorAll('.preview-val-cb').forEach(vCb => {
+                        vCb.addEventListener('change', () => {
+                            const someChecked = [...item.querySelectorAll('.preview-val-cb')].some(c => c.checked);
+                            if (cb) cb.checked = someChecked;
+                            item.classList.toggle('active-group', someChecked);
+                        });
+                    });
+                    item.querySelectorAll('.swatch-container:not(.remaining-swatch-item)').forEach(container => {
+                        container.addEventListener('click', () => {
+                            const circle = container.querySelector('.swatch-circle');
+                            const isActive = container.classList.toggle('bg-blue-50');
+                            circle?.classList.toggle('ring-blue-600', isActive);
+                            circle?.classList.toggle('scale-110', isActive);
+                            circle?.classList.toggle('ring-[3px]', isActive);
+                            
+                            const someActive = [...item.querySelectorAll('.swatch-container')].some(c => c.classList.contains('bg-blue-50'));
+                            if (swatchBtn) swatchBtn.classList.toggle('ring-blue-600', someActive);
+                        });
+                    });
+                }
+            });
+
+            // Handle Remaining Swatches (independent items)
+            previewBox.querySelectorAll('.remaining-swatch-item').forEach(container => {
+                container.addEventListener('click', () => {
                     const circle = container.querySelector('.swatch-circle');
-                    if (isActive && !isSingle) {
-                        container.classList.remove('bg-blue-50');
-                        circle?.classList.remove('ring-blue-600', 'scale-110', 'ring-[3px]');
+                    const isActive = container.classList.contains('bg-blue-50');
+                    
+                    if (isSingle) {
+                        if (!isActive) {
+                            deselectAll();
+                            container.classList.add('bg-blue-50');
+                            circle?.classList.add('ring-blue-600', 'scale-110', 'ring-[3px]');
+                        }
                     } else {
-                        container.classList.add('bg-blue-50');
-                        circle?.classList.add('ring-blue-600', 'scale-110', 'ring-[3px]');
+                        const next = !isActive;
+                        container.classList.toggle('bg-blue-50', next);
+                        circle?.classList.toggle('ring-blue-600', next);
+                        circle?.classList.toggle('scale-110', next);
+                        circle?.classList.toggle('ring-[3px]', next);
                     }
                 });
             });
@@ -984,7 +1019,7 @@
 
         function syncDisplayTypeOptions() {
             const source = sourceSelect.value;
-            const isMerged = filterSelect.value === 'merged';
+            const isMerged = isMergedMode();
             let allowed = ['Box', 'Check List', 'Color Swatch', 'Image Swatch'];
             if (source === 'Price') allowed = ['Slider', 'Check List'];
             else if (source === 'Availability') allowed = ['Box', 'Check List'];
@@ -999,13 +1034,14 @@
 
         function updateVisibility() {
             const source = sourceSelect.value;
-            const isMerged = filterSelect.value === 'merged';
-            const hideMerged = mergedDisabledSources.has(source);
+            const isManually = filterSelect.value === 'manually';
+            const isMerged = isMergedMode();
+            const hideMergedSource = mergedDisabledSources.has(source);
             const showAdvanced = sourceChosenOnce;
 
+            mergedTypeContainer.classList.toggle('hidden', !isManually);
             syncDisplayTypeOptions();
             
-            // Logic for Description
             if (isMerged) {
                 description.innerHTML = `Grouping Filter Value underlying a created Group (For example "Blue" include Navy, Teal, "Red" include Red Wine, Red Pink, etc..). <a href="#" class="text-blue-600 underline hover:text-blue-700">Learn more</a>`;
                 description.classList.remove('hidden');
@@ -1013,15 +1049,12 @@
                 description.classList.add('hidden');
             }
 
-            // Hide "Result must match" if Merged Group is selected
             matchOptions.classList.toggle('hidden', isMerged);
-            
             advancedOptions.classList.toggle('hidden', !showAdvanced);
             filterValuesSection.classList.toggle('hidden', !showAdvanced);
 
             if (isMerged && ['Color Swatch','Image Swatch'].includes(displayTypeSelect.value)) {
                 if (hideValueNameContainer.classList.contains('hidden')) {
-                    // First time choosing swatch, default to HIDE = ON
                     hideValueNameCheckbox.checked = true;
                     hideNameToggle.classList.add('bg-blue-600');
                     hideNameToggle.classList.remove('bg-gray-200');
@@ -1038,9 +1071,18 @@
                 remainingContainer.classList.add('hidden');
             }
             
+            // Handle source restrictions
             if (sourceChosenOnce) {
-                filterSelect.querySelectorAll('option[value="merged"]').forEach(o => o.hidden = hideMerged);
-                if (hideMerged && filterSelect.value === 'merged') filterSelect.value = 'all';
+                // If price/avail, default is ok but merged should be restricted
+                [...mergedTypeSelect.options].forEach(o => {
+                    if (o.value === 'merged') {
+                        o.disabled = hideMergedSource;
+                        o.hidden = hideMergedSource;
+                    }
+                });
+                if (hideMergedSource && mergedTypeSelect.value === 'merged') {
+                    mergedTypeSelect.value = 'default';
+                }
             }
             
             if (isMerged) {
@@ -1051,6 +1093,8 @@
                     if (wrap) { wrap.classList.toggle('hidden', !isVisualSwatchMode()); wrap.classList.toggle('flex', isVisualSwatchMode()); }
                 });
             } else {
+                dynamicConfigArea.innerHTML = '';
+                remainingContainer.classList.add('hidden');
                 hideMergedCheckbox.checked = false;
             }
             
@@ -1066,6 +1110,10 @@
             if (isMerged) renderRemainingBox();
             updatePreview();
         }
+
+        mergedTypeSelect.addEventListener('change', () => {
+            updateVisibility();
+        });
 
         function setSource(value) {
             sourceSelect.value = value;
