@@ -17,7 +17,11 @@
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white w-full max-w-4xl rounded-xl custom-shadow overflow-hidden flex flex-col border border-gray-200">
+    <div class="fixed top-4 left-4 z-50 flex gap-2">
+        <button id="enter-storefront-btn" class="px-4 py-2 bg-zinc-800 text-white rounded-md text-sm font-semibold shadow-lg">Enter StoreFront</button>
+        <button id="back-filter-btn" class="hidden px-4 py-2 bg-white text-zinc-800 border border-gray-300 rounded-md text-sm font-semibold shadow-lg">Back to Filter setup</button>
+    </div>
+    <div id="setup-view" class="bg-white w-full max-w-4xl rounded-xl custom-shadow overflow-hidden flex flex-col border border-gray-200">
         <!-- Header -->
         <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center bg-white">
             <div class="flex items-center space-x-2">
@@ -273,6 +277,30 @@
         </div>
     </div>
 
+    <div id="storefront-view" class="hidden w-full max-w-[1500px] bg-white rounded-xl custom-shadow overflow-hidden border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
+            <div>
+                <div class="text-lg font-semibold text-gray-900">StoreFront</div>
+                <div id="storefront-subtitle" class="text-xs text-gray-500">Previewing current filter setup</div>
+            </div>
+            <button id="storefront-refresh" class="px-3 py-2 text-sm font-medium text-zinc-700 border border-gray-300 rounded-md bg-white">Refresh</button>
+        </div>
+        <div class="grid grid-cols-[320px_minmax(0,1fr)] min-h-[760px]">
+            <aside id="storefront-filter-bar" class="border-r border-gray-200 bg-white p-5 overflow-y-auto"></aside>
+            <main class="bg-white p-5 overflow-y-auto">
+                <div class="flex items-center justify-between mb-5 text-sm">
+                    <div id="storefront-product-count" class="text-gray-700 font-medium">217 Products</div>
+                    <div class="flex gap-6 text-gray-700">
+                        <span>Show 12 <i class="fas fa-chevron-down text-[10px] ml-1"></i></span>
+                        <span>Alphabetically, A-Z <i class="fas fa-chevron-down text-[10px] ml-1"></i></span>
+                    </div>
+                </div>
+                <div id="storefront-active-filters" class="flex flex-wrap items-center gap-2 mb-6 text-sm"></div>
+                <div id="storefront-grid" class="grid grid-cols-4 gap-8"></div>
+            </main>
+        </div>
+    </div>
+
     <input type="hidden" id="source-select" value="Tag">
     <script>
         const filterSelect = document.getElementById('filter-value-select');
@@ -302,6 +330,253 @@
         const hideNameLabel = document.getElementById('hide-name-label');
         const hideNameSwitch = document.getElementById('hide-name-switch');
         const hideNameKnob = document.getElementById('hide-name-knob');
+        const enterStorefrontBtn = document.getElementById('enter-storefront-btn');
+        const backFilterBtn = document.getElementById('back-filter-btn');
+        const setupView = document.getElementById('setup-view');
+        const storefrontView = document.getElementById('storefront-view');
+        const storefrontFilterBar = document.getElementById('storefront-filter-bar');
+        const storefrontGrid = document.getElementById('storefront-grid');
+        const storefrontActiveFilters = document.getElementById('storefront-active-filters');
+        const storefrontSubtitle = document.getElementById('storefront-subtitle');
+
+        function getStorefrontConfig() {
+            return {
+                source: sourceSelect.value,
+                label: labelInput.value || 'Tag',
+                isMerged: isMergedMode(),
+                mode: optionSelect.value,
+                displayType: displayTypeSelect.value
+            };
+        }
+
+        const storefrontState = { selected: new Set() };
+
+        function getGroupData() {
+            return [...document.querySelectorAll('.group-row')].map((g, idx) => {
+                const groupName = g.querySelector('.group-name-input')?.value?.trim() || `Group ${idx + 1}`;
+                const values = [...g.querySelectorAll('.value-row')].map((row, vidx) => {
+                    const valueName = row.querySelector('.value-input')?.value?.trim() || `Value ${vidx + 1}`;
+                    return {
+                        name: valueName,
+                        color: row.dataset.color || '#d1d5db',
+                        image: row.dataset.image || ''
+                    };
+                }).filter(v => v.name);
+                return { groupName, values, color: g.dataset.color || '#d1d5db' };
+            }).filter(g => g.values.length || g.groupName);
+        }
+
+        function chipHtml(label, key, active = false, sub = '') {
+            return `<button data-key="${key}" class="sf-chip ${active ? 'active' : ''} px-3 py-1.5 rounded-full border text-xs flex items-center gap-2 ${active ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-gray-200 bg-gray-100 text-gray-700'}"><span>${label}</span>${sub ? `<span class="text-[10px] opacity-70">${sub}</span>` : ''}</button>`;
+        }
+
+        function renderStorefront() {
+            const cfg = getStorefrontConfig();
+            const groups = getGroupData();
+            storefrontSubtitle.textContent = `${cfg.label} • ${cfg.source} • ${cfg.isMerged ? 'Merged Group' : 'Default'}`;
+            storefrontFilterBar.innerHTML = `<div class="space-y-5"><div><div class="text-2xl font-medium text-gray-900 mb-6">${cfg.label}</div><div class="relative mb-5"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i><input class="w-full border border-gray-300 rounded-md py-3 pl-10 pr-3 text-sm" value="Search products" readonly></div></div><div class="space-y-4" id="storefront-dynamic-filters"></div></div>`;
+            const filterArea = storefrontFilterBar.querySelector('#storefront-dynamic-filters');
+            const display = cfg.displayType;
+            const sectionTitle = cfg.isMerged ? 'Merged Group' : cfg.source;
+            const hideChildren = cfg.isMerged && hideMergedCheckbox.checked;
+            
+            let html = `<div class="text-sm font-semibold text-gray-900">${sectionTitle}</div>`;
+            
+            // 1. Render Defined Groups
+            groups.forEach((g, gi) => {
+                const groupKey = `g:${gi}`;
+                const groupActive = storefrontState.selected.has(groupKey);
+                const isSwatch = display === 'Color Swatch' || display === 'Image Swatch';
+                
+                html += `<div class="border border-gray-200 rounded-lg p-3 space-y-3">`;
+                
+                // Group Header / Parent
+                if (isSwatch) {
+                    const bg = `style="background:${g.color}"`;
+                    html += `<div class="flex items-center gap-3">
+                        <button data-key="${groupKey}" data-type="group" class="w-8 h-8 rounded-full border-2 transition-all ${groupActive ? 'ring-4 ring-zinc-900/20 border-zinc-900 scale-110' : 'border-white shadow'}" ${bg}></button>
+                        <span class="text-xs font-bold text-gray-900">${g.groupName}</span>
+                    </div>`;
+                } else {
+                    html += `<button data-key="${groupKey}" data-type="group" class="flex items-center gap-2 text-left w-full">
+                        <span class="w-4 h-4 rounded border ${groupActive ? 'bg-zinc-900 border-zinc-900' : 'border-gray-300 bg-white'}"></span>
+                        <span class="text-xs font-bold text-gray-900">${g.groupName}</span>
+                    </button>`;
+                }
+
+                // Children (only if not hidden and in multiple mode)
+                if (!hideChildren && cfg.mode === 'multiple') {
+                    if (isSwatch) {
+                        html += `<div class="grid grid-cols-4 gap-2 ml-1">`;
+                        g.values.forEach((v, vi) => {
+                            const childKey = `c:${gi}:${vi}`;
+                            const childActive = storefrontState.selected.has(childKey);
+                            const cBg = display === 'Image Swatch' ? (v.image ? `style="background-image:url(${v.image});background-size:cover;"` : 'style="background:#f3f4f6"') : `style="background:${v.color}"`;
+                            html += `<button data-key="${childKey}" data-type="child" class="w-10 h-10 rounded-full border-2 transition-all ${childActive ? 'ring-4 ring-zinc-900/15 border-zinc-900' : 'border-white shadow'}" ${cBg} title="${v.name}"></button>`;
+                        });
+                        html += `</div>`;
+                    } else {
+                        html += `<div class="space-y-2 ml-6">`;
+                        g.values.forEach((v, vi) => {
+                            const childKey = `c:${gi}:${vi}`;
+                            const childActive = storefrontState.selected.has(childKey);
+                            html += `<button data-key="${childKey}" data-type="child" class="flex items-center gap-2 text-left text-xs text-gray-600">
+                                <span class="w-3.5 h-3.5 rounded border ${childActive ? 'bg-zinc-800 border-zinc-800' : 'border-gray-300 bg-white'}"></span>
+                                <span>${v.name}</span>
+                            </button>`;
+                        });
+                        html += `</div>`;
+                    }
+                }
+                html += `</div>`;
+            });
+
+            // 2. Render Remaining Values (Independent)
+            if (cfg.isMerged) {
+                const assigned = getAssignedValues();
+                const remaining = sourceValuesData.filter(item => !assigned.has(item.name.toLowerCase()) && item.included);
+                if (remaining.length > 0) {
+                    html += `<div class="pt-2 space-y-2">`;
+                    remaining.forEach((item, ri) => {
+                        const remKey = `r:${ri}`;
+                        const active = storefrontState.selected.has(remKey);
+                        if (display === 'Color Swatch' || display === 'Image Swatch') {
+                            const bg = display === 'Image Swatch' ? (item.image ? `style="background-image:url(${item.image});background-size:cover;"` : 'style="background:#f3f4f6"') : `style="background:${item.color}"`;
+                            html += `<div class="flex items-center gap-3 p-2">
+                                <button data-key="${remKey}" data-type="rem" class="w-8 h-8 rounded-full border-2 transition-all ${active ? 'ring-4 ring-zinc-900/20 border-zinc-900 scale-110' : 'border-white shadow'}" ${bg}></button>
+                                <span class="text-xs font-medium text-gray-700">${item.name}</span>
+                            </div>`;
+                        } else {
+                            html += `<button data-key="${remKey}" data-type="rem" class="flex items-center gap-2 text-left w-full p-1">
+                                <span class="w-4 h-4 rounded border ${active ? 'bg-zinc-900 border-zinc-900' : 'border-gray-300 bg-white'}"></span>
+                                <span class="text-xs text-gray-700">${item.name}</span>
+                            </button>`;
+                        }
+                    });
+                    html += `</div>`;
+                }
+            }
+
+            filterArea.innerHTML = html;
+            storefrontGrid.innerHTML = Array.from({length: 8}).map((_, i) => `<div class="group"><div class="bg-gray-100 rounded-xl aspect-[3/4] mb-3 flex items-center justify-center text-gray-400"><i class="fas fa-image text-3xl"></i></div><div class="text-sm font-medium text-gray-900">Product ${i+1}</div><div class="text-xs text-gray-500">$${(i+1)*12}</div></div>`).join('');
+            updateStorefrontActiveLine();
+            bindStorefrontClicks();
+        }
+
+        function updateStorefrontActiveLine() {
+            const cfg = getStorefrontConfig();
+            const groups = getGroupData();
+            const assigned = getAssignedValues();
+            const remaining = sourceValuesData.filter(item => !assigned.has(item.name.toLowerCase()) && item.included);
+            
+            let chipsHtml = '';
+            
+            if (storefrontState.selected.size > 0) {
+                chipsHtml += `<button id="storefront-clear-all" class="text-gray-900 font-medium mr-4 hover:underline">Clear All</button>`;
+            }
+
+            if (cfg.mode === 'single') {
+                // SINGLE MODE: Show Group Name (A) or Remaining Value Name
+                storefrontState.selected.forEach(key => {
+                    const parts = key.split(':');
+                    const type = parts[0];
+                    let label = '';
+                    if (type === 'g') label = groups[parts[1]]?.groupName;
+                    else if (type === 'r') label = remaining[parts[1]]?.name;
+                    
+                    if (label) {
+                        chipsHtml += `<div class="bg-gray-100 text-gray-800 text-xs px-3 py-1.5 rounded-full border border-gray-200 flex items-center gap-2">
+                            <span class="font-bold">${label.toUpperCase()}</span>
+                            <button onclick="storefrontState.selected.delete('${key}'); renderStorefront();" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-[10px]"></i></button>
+                        </div>`;
+                    }
+                });
+            } else {
+                // MULTIPLE MODE: Show Child Values (A1, A2, A3) and Remaining Values. Do NOT show Group Name.
+                storefrontState.selected.forEach(key => {
+                    const parts = key.split(':');
+                    const type = parts[0];
+                    if (type === 'g') return; // Skip group parents in multiple mode list
+
+                    let label = '';
+                    if (type === 'c') label = groups[parts[1]]?.values[parts[2]]?.name;
+                    else if (type === 'r') label = remaining[parts[1]]?.name;
+
+                    if (label) {
+                        chipsHtml += `<div class="bg-gray-100 text-gray-800 text-xs px-3 py-1.5 rounded-full border border-gray-200 flex items-center gap-2">
+                            <span class="font-bold">${label.toUpperCase()}</span>
+                            <button onclick="storefrontState.selected.delete('${key}'); renderStorefront();" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-[10px]"></i></button>
+                        </div>`;
+                    }
+                });
+            }
+
+            storefrontActiveFilters.innerHTML = chipsHtml;
+            const clearBtn = document.getElementById('storefront-clear-all');
+            if (clearBtn) clearBtn.onclick = () => { storefrontState.selected.clear(); renderStorefront(); };
+        }
+
+        function bindStorefrontClicks() {
+            document.querySelectorAll('#storefront-filter-bar [data-key]').forEach(btn => {
+                btn.onclick = () => {
+                    const key = btn.dataset.key;
+                    const type = btn.dataset.type;
+                    const cfg = getStorefrontConfig();
+                    
+                    if (cfg.mode === 'single') {
+                        // In single mode, only groups and remaining values are clickable
+                        if (type === 'child') return; 
+                        if (storefrontState.selected.has(key)) {
+                            storefrontState.selected.delete(key);
+                        } else {
+                            storefrontState.selected.clear();
+                            storefrontState.selected.add(key);
+                        }
+                    } else {
+                        // Multiple mode
+                        if (type === 'group') {
+                            const [_, gi] = key.split(':').map(Number);
+                            const group = getGroupData()[gi];
+                            const childKeys = group.values.map((_, vi) => `c:${gi}:${vi}`);
+                            const allSelected = childKeys.every(k => storefrontState.selected.has(k)) && storefrontState.selected.has(key);
+                            
+                            if (allSelected) {
+                                storefrontState.selected.delete(key);
+                                childKeys.forEach(k => storefrontState.selected.delete(k));
+                            } else {
+                                storefrontState.selected.add(key);
+                                childKeys.forEach(k => storefrontState.selected.add(k));
+                            }
+                        } else {
+                            // Toggling individual child or remaining value
+                            if (storefrontState.selected.has(key)) {
+                                storefrontState.selected.delete(key);
+                                // If unselecting a child, unselect its group parent too
+                                if (type === 'child') {
+                                    const [_, gi] = key.split(':');
+                                    storefrontState.selected.delete(`g:${gi}`);
+                                }
+                            } else {
+                                storefrontState.selected.add(key);
+                            }
+                        }
+                    }
+                    renderStorefront();
+                };
+            });
+        }
+
+        function showStorefront(show) {
+            setupView.classList.toggle('hidden', show);
+            storefrontView.classList.toggle('hidden', !show);
+            enterStorefrontBtn.classList.toggle('hidden', show);
+            backFilterBtn.classList.toggle('hidden', !show);
+            if (show) renderStorefront();
+        }
+
+        enterStorefrontBtn.addEventListener('click', () => showStorefront(true));
+        backFilterBtn.addEventListener('click', () => showStorefront(false));
+        document.getElementById('storefront-refresh').addEventListener('click', renderStorefront);
 
         hideNameToggle.addEventListener('click', () => {
             hideValueNameCheckbox.checked = !hideValueNameCheckbox.checked;
@@ -675,6 +950,7 @@
             }
 
             previewBox.innerHTML = html + `</div>`;
+            if (!storefrontView.classList.contains('hidden')) renderStorefront();
 
             // EVENT BINDING RE-REWRITTEN FOR NEW LOGIC
             const allGroupItems = previewBox.querySelectorAll('.group-preview-item');
