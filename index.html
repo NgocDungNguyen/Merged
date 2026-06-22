@@ -1626,19 +1626,31 @@
             enableToggle?.addEventListener('click', () => {
                 const enabled = row.dataset.enabled !== 'false';
                 const next = !enabled;
-                row.dataset.enabled = next ? 'true' : 'false';
-                enableToggle.setAttribute('aria-pressed', next ? 'true' : 'false');
-                const track = enableToggle.querySelector('span.relative');
-                const knob = enableToggle.querySelector('.value-enable-knob');
-                if (track) {
-                    track.classList.toggle('bg-green-500', next);
-                    track.classList.toggle('bg-gray-300', !next);
-                }
-                if (knob) {
-                    knob.classList.toggle('translate-x-3', next);
-                    knob.classList.toggle('translate-x-0', !next);
-                }
-                row.style.opacity = next ? '' : '0.45';
+                const valueName = input.value.trim().toLowerCase();
+
+                document.querySelectorAll('.value-row').forEach(r => {
+                    const rInput = r.querySelector('.value-input');
+                    if (!valueName || !rInput || rInput.value.trim().toLowerCase() !== valueName) return;
+
+                    r.dataset.enabled = next ? 'true' : 'false';
+                    r.style.opacity = next ? '' : '0.45';
+
+                    const rToggle = r.querySelector('.value-enable-toggle');
+                    if (rToggle) {
+                        rToggle.setAttribute('aria-pressed', next ? 'true' : 'false');
+                        const rTrack = rToggle.querySelector('span.relative');
+                        const rKnob = rToggle.querySelector('.value-enable-knob');
+                        if (rTrack) {
+                            rTrack.classList.toggle('bg-green-500', next);
+                            rTrack.classList.toggle('bg-gray-300', !next);
+                        }
+                        if (rKnob) {
+                            rKnob.classList.toggle('translate-x-3', next);
+                            rKnob.classList.toggle('translate-x-0', !next);
+                        }
+                    }
+                });
+
                 updatePreview();
                 renderRemainingBox();
             });
