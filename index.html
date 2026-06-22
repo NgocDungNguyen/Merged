@@ -1753,10 +1753,15 @@
                 if (!row.contains(e.target)) dropdown.classList.add('hidden'); 
             });
             
-            row.querySelector('.rm-v').addEventListener('click', () => { 
+            row.querySelector('.rm-v').addEventListener('click', () => {
+                const valueName = input.value.trim();
+                if (valueName && row.dataset.enabled === 'false') {
+                    const sourceItem = sourceValuesData.find(v => v.name.toLowerCase() === valueName.toLowerCase());
+                    if (sourceItem) sourceItem.included = false;
+                }
                 row.remove();
                 renderRemainingBox();
-                updatePreview(); 
+                updatePreview();
             });
 
             row.addEventListener('dragstart', () => row.classList.add('dragging'));
