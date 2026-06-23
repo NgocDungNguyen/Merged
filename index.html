@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merged</title>
+    <title>Tag Filter Configuration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
@@ -133,6 +133,11 @@
                         </div>
                     </div>
 
+                    <!-- Hide Out Of Stock (Product Variant sources only) -->
+                    <label id="hide-oos-label" class="hidden items-center text-xs text-gray-700 cursor-pointer -mt-1">
+                        <input type="checkbox" id="hide-out-of-stock" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Hide Out Of Stock
+                    </label>
+
                     <!-- Label -->
                     <div class="space-y-1">
                         <label class="block text-xs font-medium text-gray-600">Label</label>
@@ -188,9 +193,6 @@
                             </label>
                             <label class="flex items-center text-xs text-gray-700 cursor-pointer">
                                 <input type="checkbox" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Collapse on Mobile
-                            </label>
-                            <label id="hide-oos-label" class="hidden flex items-center text-xs text-gray-700 cursor-pointer">
-                                <input type="checkbox" id="hide-out-of-stock" class="w-3 h-3 border-gray-300 rounded text-blue-600 mr-2 focus:ring-blue-500">Hide Out Of Stock
                             </label>
                         </div>
                     </div>
@@ -433,12 +435,10 @@
 
         function getGroupData() {
             return [...document.querySelectorAll('.group-row')].map((g, idx) => {
-                if (g.dataset.groupEnabled === 'false') return null;
                 const groupName = g.querySelector('.group-name-input')?.value?.trim() || `Group ${idx + 1}`;
                 const values = [...g.querySelectorAll('.value-row')].map((row, vidx) => {
                     const valueName = row.querySelector('.value-input')?.value?.trim() || '';
                     if (!valueName) return null;
-                    if (row.dataset.enabled === 'false') return null;
                     return {
                         name: valueName,
                         color: row.dataset.color || '#d1d5db',
@@ -1695,11 +1695,6 @@
                     <div class="val-dropdown hidden absolute top-full left-0 w-full bg-white border border-gray-200 rounded-b shadow-lg z-20 max-h-40 overflow-y-auto">
                         <div class="dropdown-list"></div>
                     </div>
-                    <button type="button" class="value-enable-toggle flex items-center flex-shrink-0 focus:outline-none" title="Show/Hide on storefront" aria-pressed="true">
-                        <span class="relative inline-block w-7 h-4 rounded-full bg-green-500 transition-colors duration-200">
-                            <span class="value-enable-knob absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transform transition-transform duration-200 translate-x-3"></span>
-                        </span>
-                    </button>
                     <button class="rm-v text-gray-300 hover:text-red-500 ml-1"><i class="fas fa-times text-[10px]"></i></button>
                 </div>
             `;
@@ -1731,31 +1726,44 @@
             };
 
             function syncValueAsset() {
-                const match = sourceValuesData.find(v => v.name.toLowerCase() === input.value.trim().toLowerCase());
+                const currentName = input.value.trim();
+                const currentKey = currentName.toLowerCase();
+                const match = sourceValuesData.find(v => v.name.toLowerCase() === currentKey);
+
+                // When value name changes, restore previous value's included status
+                const prevKey = row.dataset.currentValueKey || '';
+                if (prevKey && prevKey !== currentKey) {
+                    const prevMatch = sourceValuesData.find(v => v.name.toLowerCase() === prevKey);
+                    if (prevMatch && row.dataset.prevIncluded !== undefined) {
+                        prevMatch.included = row.dataset.prevIncluded === 'true';
+                    }
+                }
+                // Save snapshot of the new value's included status at the moment of assignment
+                if (currentKey && currentKey !== prevKey) {
+                    row.dataset.currentValueKey = currentKey;
+                    row.dataset.prevIncluded = match ? (match.included ? 'true' : 'false') : 'true';
+                }
+
                 const defaultColor = match?.color || row.dataset.color || '#d1d5db';
                 const defaultImage = match?.image || row.dataset.image || '';
-                
+
                 row.dataset.color = defaultColor;
                 row.dataset.image = defaultImage;
-                
+
                 if (colorInput) colorInput.value = defaultColor;
                 if (colorText) colorText.value = defaultColor;
                 if (colorDot) colorDot.style.background = defaultColor;
                 if (imageText) imageText.value = defaultImage;
                 if (imagePreview) {
-                    imagePreview.innerHTML = defaultImage 
-                        ? `<img src="${defaultImage}" class="w-full h-full object-cover">` 
+                    imagePreview.innerHTML = defaultImage
+                        ? `<img src="${defaultImage}" class="w-full h-full object-cover">`
                         : `<span class="w-4 h-4 rounded-full border border-gray-300 block bg-gray-100"></span>`;
                 }
-                
+
                 colorWrap?.classList.toggle('hidden', !isColorMode());
                 colorWrap?.classList.toggle('flex', isColorMode());
                 imageWrap?.classList.toggle('hidden', !isImageMode());
                 imageWrap?.classList.toggle('flex', isImageMode());
-
-                if (match && !getValueEnabledStatus(input.value.trim()) && row.dataset.enabled !== 'false') {
-                    applyValueEnabledState(row, false);
-                }
             }
 
             input.addEventListener('focus', () => { 
@@ -1781,14 +1789,6 @@
                 }
             });
 
-            const enableToggle = row.querySelector('.value-enable-toggle');
-            enableToggle?.addEventListener('click', () => {
-                const next = row.dataset.enabled === 'false';
-                applyValueEnabledState(row, next);
-                updatePreview();
-                renderRemainingBox();
-            });
-            
             colorTrigger?.addEventListener('click', () => colorInput?.click());
             
             colorInput?.addEventListener('input', () => {
@@ -1850,6 +1850,11 @@
             });
             
             row.querySelector('.rm-v').addEventListener('click', () => {
+                const currentKey = input.value.trim().toLowerCase();
+                if (currentKey && row.dataset.prevIncluded !== undefined) {
+                    const item = sourceValuesData.find(v => v.name.toLowerCase() === currentKey);
+                    if (item) item.included = row.dataset.prevIncluded === 'true';
+                }
                 row.remove();
                 renderRemainingBox();
                 updatePreview();
@@ -1929,11 +1934,6 @@
                         </div>
 
                         <input type="text" placeholder="Group Name" class="group-name-input flex-1 text-sm border-none focus:ring-0 p-0 outline-none font-semibold" />
-                        <button type="button" class="group-enable-toggle flex items-center flex-shrink-0 focus:outline-none" title="Show/Hide group on storefront" aria-pressed="true">
-                            <span class="relative inline-block w-7 h-4 rounded-full bg-green-500 transition-colors duration-200">
-                                <span class="group-enable-knob absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow transform transition-transform duration-200 translate-x-3"></span>
-                            </span>
-                        </button>
                         <button class="rm-g text-gray-400 hover:text-red-500 transition-colors"><i class="far fa-trash-alt text-xs"></i></button>
                     </div>
                 </div>
@@ -1973,27 +1973,6 @@
                 validateGroupNames();
                 renderRemainingBox();
                 updatePreview();
-            });
-
-            const groupToggle = gRow.querySelector('.group-enable-toggle');
-            groupToggle?.addEventListener('click', () => {
-                const next = gRow.dataset.groupEnabled === 'false';
-                gRow.dataset.groupEnabled = next ? 'true' : 'false';
-                groupToggle.setAttribute('aria-pressed', next ? 'true' : 'false');
-                const track = groupToggle.querySelector('span.relative');
-                const knob = groupToggle.querySelector('.group-enable-knob');
-                if (track) {
-                    track.classList.toggle('bg-green-500', next);
-                    track.classList.toggle('bg-gray-300', !next);
-                }
-                if (knob) {
-                    knob.classList.toggle('translate-x-3', next);
-                    knob.classList.toggle('translate-x-0', !next);
-                }
-                gRow.classList.toggle('group-row-disabled', !next);
-                gRow.draggable = next;
-                updatePreview();
-                renderRemainingBox();
             });
 
             gInp.focus();
@@ -2087,13 +2066,9 @@
 
                 const valueRows = [...g.querySelectorAll('.value-row')];
                 const filledRows = valueRows.filter(r => r.querySelector('.value-input')?.value?.trim());
-                const activeRows = filledRows.filter(r => r.dataset.enabled !== 'false');
 
                 if (filledRows.length === 0) {
                     warning.textContent = 'At least 1 value required.';
-                    warning.classList.remove('hidden');
-                } else if (activeRows.length === 0) {
-                    warning.textContent = 'At least 1 active (enabled) value required.';
                     warning.classList.remove('hidden');
                 } else {
                     warning.textContent = '';
