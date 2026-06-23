@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tag Filter Configuration</title>
+    <title>Merged</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
@@ -61,9 +61,14 @@
             outline: none;
             box-shadow: ring(1px) ring(var(--tw-ring-color)) !important;
         }
+
+        /* Label tooltip — uses global fixed element to escape overflow clipping */
+        .tip-host { display: inline-flex; align-items: center; cursor: default; }
+        #g-tip { display: none; position: fixed; z-index: 99999; background: #1f2937; color: #fff; font-size: 10px; line-height: 1.4; border-radius: 4px; padding: 4px 9px; white-space: nowrap; pointer-events: none; box-shadow: 0 4px 8px rgba(0,0,0,.25); }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
+    <div id="g-tip"></div>
     <div class="fixed top-4 left-4 z-50 flex gap-2">
         <button id="enter-storefront-btn" class="px-4 py-2 bg-zinc-800 text-white rounded-md text-sm font-semibold shadow-lg hover:bg-zinc-700 transition-colors">Enter StoreFront</button>
         <button id="back-filter-btn" class="hidden px-4 py-2 bg-white text-zinc-800 border border-gray-300 rounded-md text-sm font-semibold shadow-lg hover:bg-gray-50 transition-colors">Back to Filter setup</button>
@@ -94,7 +99,7 @@
                         <label class="block text-xs font-medium text-gray-600">Source</label>
                         <div class="relative">
                             <button id="source-dropdown-btn" type="button" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 flex items-center justify-between hover:border-gray-400 transition-colors">
-                                <span id="source-dropdown-label">Tag</span>
+                                <span id="source-dropdown-label" class="text-gray-400">Select your source</span>
                                 <i class="fas fa-chevron-down text-xs text-gray-400"></i>
                             </button>
                             <div id="source-dropdown-menu" class="hidden absolute z-30 mt-1 w-full bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
@@ -108,6 +113,12 @@
                                     <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Product Type"><span>Product Type</span><span class="text-[11px] text-gray-400">Standard</span></button>
                                     <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Color"><span>Color</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
                                     <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Size"><span>Size</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
+                                    <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Style"><span>Style</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
+                                    <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Fit"><span>Fit</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
+                                    <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Pattern"><span>Pattern</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
+                                    <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Length"><span>Length</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
+                                    <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Weight"><span>Weight</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
+                                    <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Scent"><span>Scent</span><span class="text-[11px] text-gray-400">Product Variant</span></button>
                                     <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Material"><span>Material</span><span class="text-[11px] text-gray-400">Metafield</span></button>
                                     <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Shape"><span>Shape</span><span class="text-[11px] text-gray-400">Metafield</span></button>
                                     <button type="button" class="source-option w-full text-left px-3 py-2 hover:bg-gray-50 flex justify-between" data-value="Image"><span>Image</span><span class="text-[11px] text-gray-400">Metafield</span></button>
@@ -126,8 +137,17 @@
                     <div class="space-y-1">
                         <label class="block text-xs font-medium text-gray-600">Label</label>
                         <div class="relative">
-                            <input type="text" value="Tag" id="label-field" class="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400">3/40</span>
+                            <input type="text" value="" id="label-field" maxlength="40" placeholder="Filter label" class="w-full border border-gray-300 rounded-md py-1.5 px-3 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <span id="label-char-count" class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400">0/40</span>
+                        </div>
+                    </div>
+
+                    <!-- Label Tooltip (hidden until source chosen) -->
+                    <div id="label-tooltip-container" class="space-y-1 hidden">
+                        <label class="block text-xs font-medium text-gray-600">Label tooltip</label>
+                        <div class="relative">
+                            <input type="text" id="label-tooltip-field" maxlength="40" placeholder="Tooltip text (optional)" class="w-full border border-gray-300 rounded-md py-1.5 px-3 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <span id="tooltip-char-count" class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400">0/40</span>
                         </div>
                     </div>
 
@@ -239,6 +259,18 @@
                         </div>
                     </div>
 
+                    <!-- Default mode values box (visible when Manually + Default selected) -->
+                    <div id="default-values-box-container" class="hidden space-y-2 pt-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider">Values</label>
+                            <div class="flex items-center gap-3">
+                                <button type="button" onclick="setAllIncluded(true)" class="text-[10px] font-semibold text-green-600 hover:text-green-700 hover:underline focus:outline-none">Include All</button>
+                                <button type="button" onclick="setAllIncluded(false)" class="text-[10px] font-semibold text-gray-500 hover:text-gray-700 hover:underline focus:outline-none">Exclude All</button>
+                            </div>
+                        </div>
+                        <div id="default-values-list" class="border border-gray-200 rounded-md bg-white max-h-64 overflow-y-auto divide-y divide-gray-100 shadow-inner"></div>
+                    </div>
+
                     <div id="dynamic-config-area" class="space-y-3"></div>
                     <p id="group-name-warning" class="hidden text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2"></p>
 
@@ -314,7 +346,7 @@
         </div>
     </div>
 
-    <input type="hidden" id="source-select" value="Tag">
+    <input type="hidden" id="source-select" value="">
 
     <script>
         // ==================== DOM ELEMENTS ====================
@@ -327,6 +359,10 @@
         const hideMergedContainer = document.getElementById('hide-merged-container');
         const hideMergedCheckbox = document.getElementById('hide-merged-values');
         const labelInput = document.getElementById('label-field');
+        const labelCharCount = document.getElementById('label-char-count');
+        const labelTooltipContainer = document.getElementById('label-tooltip-container');
+        const labelTooltipInput = document.getElementById('label-tooltip-field');
+        const tooltipCharCount = document.getElementById('tooltip-char-count');
         const previewBox = document.getElementById('preview-box');
         const remainingContainer = document.getElementById('remaining-values-box-container');
         const remainingList = document.getElementById('remaining-values-list');
@@ -371,7 +407,8 @@
         function getStorefrontConfig() {
             return {
                 source: sourceSelectEl.value,
-                label: labelInput.value || 'Tag',
+                label: labelInput.value || sourceSelectEl.value || 'Filter',
+                tooltip: labelTooltipInput ? labelTooltipInput.value.trim() : '',
                 isMerged: isMergedMode(),
                 mode: optionSelect.value,
                 displayType: displayTypeSelect.value
@@ -409,7 +446,7 @@
                     };
                 }).filter(v => v !== null);
                 return { groupName, values, color: g.dataset.color || '#d1d5db' };
-            }).filter(g => g !== null && (g.values.length > 0 || g.groupName));
+            }).filter(g => g !== null && g.values.length > 0);
         }
 
         function getAssignedValues() {
@@ -430,10 +467,6 @@
         function getValueEnabledStatus(valueName) {
             const key = (valueName || '').trim().toLowerCase();
             if (!key) return true;
-            for (const r of document.querySelectorAll('.value-row')) {
-                const rInput = r.querySelector('.value-input');
-                if (rInput && rInput.value.trim().toLowerCase() === key && r.dataset.enabled === 'false') return false;
-            }
             const sourceItem = sourceValuesData.find(v => v.name.toLowerCase() === key);
             if (sourceItem && !sourceItem.included) return false;
             return true;
@@ -587,11 +620,16 @@
                     <div class="border-t border-gray-200 my-5"></div>
                 </div>`;
 
+            // Tooltip icon helper
+            const sfTooltipIcon = cfg.tooltip
+                ? `<span class="tip-host ml-1" data-tip="${cfg.tooltip.replace(/"/g, '&quot;')}"><i class="fas fa-question-circle text-gray-400 text-[11px]"></i></span>`
+                : '';
+
             // Add Merged Group section header and search bar
             if (cfg.isMerged) {
                 filterBarHtml += `
                 <div class="mb-4">
-                    <div class="text-sm font-semibold text-gray-900 mb-3">${cfg.mode === 'multiple' ? 'Merged Group' : cfg.label}</div>
+                    <div class="text-sm font-semibold text-gray-900 mb-3 flex items-center">${cfg.mode === 'multiple' ? 'Merged Group' : cfg.label}${sfTooltipIcon}</div>
                     
                     <!-- Filter Search Bar -->
                     <div class="relative mb-4">
@@ -613,7 +651,7 @@
             } else {
                 filterBarHtml += `
                 <div class="mb-4">
-                    <div class="text-sm font-semibold text-gray-900 mb-3">${cfg.label}</div>
+                    <div class="text-sm font-semibold text-gray-900 mb-3 flex items-center">${cfg.label}${sfTooltipIcon}</div>
                 </div>`;
             }
 
@@ -773,6 +811,47 @@
             });
 
             html += allGroupHtml;
+
+            // All Filter Values mode: render every source value in filter bar
+            if (filterSelect.value === 'all') {
+                if (sourceValuesData.length > 0) {
+                    hasVisibleItems = true;
+                    html += `<div class="space-y-1">`;
+                    sourceValuesData.forEach((item) => {
+                        const origIdx = sourceValuesData.indexOf(item);
+                        const remKey = `r:${origIdx}`;
+                        const active = storefrontState.selected.has(remKey);
+                        html += `
+                            <button data-key="${remKey}" data-type="rem"
+                                    class="flex items-center gap-2 text-left w-full p-1 sf-remaining-item">
+                                <span class="w-4 h-4 rounded border ${active ? 'bg-zinc-900 border-zinc-900' : 'border-gray-300 bg-white'}"></span>
+                                <span class="text-xs text-gray-700">${item.name}</span>
+                            </button>`;
+                    });
+                    html += `</div>`;
+                }
+            }
+
+            // Default mode (Manually + not Merged): render included source values in filter bar
+            if (filterSelect.value === 'manually' && !cfg.isMerged) {
+                const defaultItems = sourceValuesData.filter(item => item.included);
+                if (defaultItems.length > 0) {
+                    hasVisibleItems = true;
+                    html += `<div class="space-y-1">`;
+                    defaultItems.forEach((item) => {
+                        const origIdx = sourceValuesData.indexOf(item);
+                        const remKey = `r:${origIdx}`;
+                        const active = storefrontState.selected.has(remKey);
+                        html += `
+                            <button data-key="${remKey}" data-type="rem"
+                                    class="flex items-center gap-2 text-left w-full p-1 sf-remaining-item">
+                                <span class="w-4 h-4 rounded border ${active ? 'bg-zinc-900 border-zinc-900' : 'border-gray-300 bg-white'}"></span>
+                                <span class="text-xs text-gray-700">${item.name}</span>
+                            </button>`;
+                    });
+                    html += `</div>`;
+                }
+            }
 
             // Separator before remaining values
             if (cfg.isMerged && hasVisibleItems) {
@@ -1136,7 +1215,8 @@
             validateGroups();
             const isSingle = optionSelect.value === 'single';
             const isMerged = isMergedMode();
-            const mainLabel = labelInput.value || 'TAG';
+            const mainLabel = labelInput.value || sourceSelectEl.value || 'FILTER';
+            const mainTooltip = labelTooltipInput ? labelTooltipInput.value.trim() : '';
             const hideChildren = hideMergedCheckbox.checked && isMerged;
             const hideNames = hideValueNameCheckbox.checked;
             const isColorSwatchMode = isMerged && displayTypeSelect.value === 'Color Swatch';
@@ -1146,10 +1226,14 @@
             const isSwatchTextRow = isSwatchMode && !hideNames;
             const groups = getGroupData();
 
+            const tooltipIconHtml = mainTooltip
+                ? `<span class="tip-host ml-1" data-tip="${mainTooltip.replace(/"/g, '&quot;')}"><i class="fas fa-question-circle text-gray-400 text-[10px]"></i></span>`
+                : '';
+
             let html = `
-                <div class="flex items-center text-[12px] font-bold text-gray-800 space-x-2 cursor-pointer mb-2" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('-rotate-90')">
+                <div class="flex items-center text-[12px] font-bold text-gray-800 space-x-2 cursor-pointer mb-2" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.fa-chevron-down').classList.toggle('-rotate-90')">
                     <i class="fas fa-chevron-down text-[10px] transition-transform"></i>
-                    <span class="uppercase">${mainLabel}</span>
+                    <span class="uppercase">${mainLabel}</span>${tooltipIconHtml}
                 </div>
                 <div class="ml-4 space-y-2 preview-content">
             `;
@@ -1255,10 +1339,49 @@
                 html += `</div></div>`;
             });
 
+            // All Filter Values mode: show every source value as a filter option
+            if (filterSelect.value === 'all') {
+                sourceValuesData.forEach(item => {
+                    const itemCount = formatCount(getRandomCount(false));
+                    const remKey = `r:${sourceValuesData.indexOf(item)}`;
+                    const isActive = storefrontState.selected.has(remKey);
+                    if (isActive) displayedPreviewValues.set(item.name.toLowerCase(), true);
+                    html += `
+                        <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative group-preview-item remaining-item">
+                            <input type="checkbox" name="preview-all" class="preview-group-cb w-3.5 h-3.5 rounded-sm border-gray-300 flex-shrink-0" ${isActive ? 'checked' : ''}>
+                            <div class="flex-1 flex justify-between items-center overflow-hidden pr-2">
+                                <span class="font-medium truncate mr-2">${item.name}</span>
+                                <span class="text-[10px] text-gray-400 font-normal flex-shrink-0">(${itemCount})</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Default mode (Manually + not Merged): show included source values as filter options
+            if (filterSelect.value === 'manually' && !isMerged) {
+                const defaultItems = sourceValuesData.filter(item => item.included);
+                defaultItems.forEach(item => {
+                    const itemCount = formatCount(getRandomCount(false));
+                    const remKey = `r:${sourceValuesData.indexOf(item)}`;
+                    const isActive = storefrontState.selected.has(remKey);
+                    if (isActive) displayedPreviewValues.set(item.name.toLowerCase(), true);
+                    html += `
+                        <div class="flex items-center text-[11px] text-gray-700 space-x-2 relative group-preview-item remaining-item">
+                            <input type="checkbox" name="preview-default" class="preview-group-cb w-3.5 h-3.5 rounded-sm border-gray-300 flex-shrink-0" ${isActive ? 'checked' : ''}>
+                            <div class="flex-1 flex justify-between items-center overflow-hidden pr-2">
+                                <span class="font-medium truncate mr-2">${item.name}</span>
+                                <span class="text-[10px] text-gray-400 font-normal flex-shrink-0">(${itemCount})</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
             // Remaining values
             if (isMerged) {
                 const assigned = getAssignedValues();
-                const remainingItems = sourceValuesData.filter(item => 
+                const remainingItems = sourceValuesData.filter(item =>
                     !assigned.has(item.name.toLowerCase()) && item.included
                 );
                 
@@ -1640,10 +1763,9 @@
                 populate(input.value); 
             });
             
-            input.addEventListener('input', () => { 
+            input.addEventListener('input', () => {
                 populate(input.value);
                 syncValueAsset();
-                ensureIncluded(input.value);
                 updatePreview();
                 renderRemainingBox();
             });
@@ -1653,7 +1775,6 @@
                 if (item && !item.classList.contains('text-gray-400')) {
                     input.value = item.textContent;
                     syncValueAsset();
-                    ensureIncluded(input.value);
                     dropdown.classList.add('hidden');
                     updatePreview();
                     renderRemainingBox();
@@ -1662,33 +1783,8 @@
 
             const enableToggle = row.querySelector('.value-enable-toggle');
             enableToggle?.addEventListener('click', () => {
-                const enabled = row.dataset.enabled !== 'false';
-                const next = !enabled;
-                const valueName = input.value.trim().toLowerCase();
-
-                document.querySelectorAll('.value-row').forEach(r => {
-                    const rInput = r.querySelector('.value-input');
-                    if (!valueName || !rInput || rInput.value.trim().toLowerCase() !== valueName) return;
-
-                    r.dataset.enabled = next ? 'true' : 'false';
-                    r.style.opacity = next ? '' : '0.45';
-
-                    const rToggle = r.querySelector('.value-enable-toggle');
-                    if (rToggle) {
-                        rToggle.setAttribute('aria-pressed', next ? 'true' : 'false');
-                        const rTrack = rToggle.querySelector('span.relative');
-                        const rKnob = rToggle.querySelector('.value-enable-knob');
-                        if (rTrack) {
-                            rTrack.classList.toggle('bg-green-500', next);
-                            rTrack.classList.toggle('bg-gray-300', !next);
-                        }
-                        if (rKnob) {
-                            rKnob.classList.toggle('translate-x-3', next);
-                            rKnob.classList.toggle('translate-x-0', !next);
-                        }
-                    }
-                });
-
+                const next = row.dataset.enabled === 'false';
+                applyValueEnabledState(row, next);
                 updatePreview();
                 renderRemainingBox();
             });
@@ -1754,11 +1850,6 @@
             });
             
             row.querySelector('.rm-v').addEventListener('click', () => {
-                const valueName = input.value.trim();
-                if (valueName && row.dataset.enabled === 'false') {
-                    const sourceItem = sourceValuesData.find(v => v.name.toLowerCase() === valueName.toLowerCase());
-                    if (sourceItem) sourceItem.included = false;
-                }
                 row.remove();
                 renderRemainingBox();
                 updatePreview();
@@ -2110,6 +2201,7 @@
             if (item) {
                 item.included = !item.included;
                 renderRemainingBox();
+                renderDefaultValuesBox();
                 updatePreview();
             }
         }
@@ -2117,7 +2209,70 @@
         function setAllIncluded(included) {
             sourceValuesData.forEach(v => { v.included = !!included; });
             renderRemainingBox();
+            renderDefaultValuesBox();
             updatePreview();
+        }
+
+        // ==================== RENDER DEFAULT VALUES BOX ====================
+        function renderDefaultValuesBox() {
+            const container = document.getElementById('default-values-box-container');
+            const listEl = document.getElementById('default-values-list');
+            if (!container || !listEl) return;
+            if (container.classList.contains('hidden')) return;
+
+            listEl.innerHTML = '';
+
+            sourceValuesData.forEach((item) => {
+                const row = document.createElement('div');
+                row.draggable = true;
+                row.dataset.name = item.name;
+                row.className = 'flex items-center justify-between px-3 py-2 hover:bg-gray-50 transition-colors duration-150';
+
+                row.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <i class="fas fa-ellipsis-v text-gray-300 text-[10px] cursor-grab active:cursor-grabbing flex-shrink-0"></i>
+                        <span class="text-[11px] font-medium text-gray-700 truncate ${!item.included ? 'opacity-40 line-through' : ''}">${item.name}</span>
+                    </div>
+                    <button onclick="toggleInclude('${item.name.replace(/'/g, "\\'")}')" class="flex items-center space-x-1.5 focus:outline-none flex-shrink-0 ml-2">
+                        <span class="text-[9px] uppercase font-bold ${item.included ? 'text-green-600' : 'text-gray-400'}">${item.included ? 'Include' : 'Exclude'}</span>
+                        <span class="relative inline-block w-6 h-3.5 rounded-full transition-colors duration-200 ${item.included ? 'bg-green-500' : 'bg-gray-300'}">
+                            <span class="absolute top-0.5 left-0.5 w-2.5 h-2.5 rounded-full bg-white shadow transform transition-transform duration-200 ${item.included ? 'translate-x-2.5' : 'translate-x-0'}"></span>
+                        </span>
+                    </button>
+                `;
+
+                row.addEventListener('dragstart', () => {
+                    row.classList.add('dragging-def', 'bg-blue-50', 'opacity-60');
+                });
+                row.addEventListener('dragend', () => {
+                    row.classList.remove('dragging-def', 'bg-blue-50', 'opacity-60');
+                    updatePreview();
+                });
+
+                listEl.appendChild(row);
+            });
+
+            const onDragOver = (e) => {
+                e.preventDefault();
+                const dragging = listEl.querySelector('.dragging-def');
+                if (!dragging) return;
+                const siblings = [...listEl.querySelectorAll('div[draggable="true"]:not(.dragging-def)')];
+                const after = siblings.find(c => e.clientY < c.getBoundingClientRect().top + c.offsetHeight / 2);
+                if (after) listEl.insertBefore(dragging, after);
+                else listEl.appendChild(dragging);
+
+                const newOrder = [...listEl.querySelectorAll('div[draggable="true"]')].map(el => el.dataset.name);
+                const reordered = [];
+                newOrder.forEach(name => {
+                    const found = sourceValuesData.find(v => v.name === name);
+                    if (found) reordered.push(found);
+                });
+                sourceValuesData = reordered;
+            };
+
+            listEl.removeEventListener('dragover', listEl._defDragOver);
+            listEl._defDragOver = onDragOver;
+            listEl.addEventListener('dragover', onDragOver);
         }
 
         function ensureIncluded(name) {
@@ -2223,6 +2378,7 @@
             if (!showAdvanced) {
                 dynamicConfigArea.innerHTML = '';
                 remainingContainer.classList.add('hidden');
+                document.getElementById('default-values-box-container')?.classList.add('hidden');
             }
 
             if (sourceChosenOnce) {
@@ -2273,6 +2429,15 @@
             });
 
             if (isMerged) renderRemainingBox();
+
+            // Default values box: show when Manually + Default mode + source chosen
+            const defaultValuesBox = document.getElementById('default-values-box-container');
+            if (defaultValuesBox) {
+                const showDefault = isManually && !isMerged && showAdvanced;
+                defaultValuesBox.classList.toggle('hidden', !showDefault);
+                if (showDefault) renderDefaultValuesBox();
+            }
+
             updatePreview();
         }
 
@@ -2280,8 +2445,11 @@
         function setSource(value) {
             sourceSelectEl.value = value;
             sourceDropdownLabel.textContent = value;
-            labelInput.value = value;
+            sourceDropdownLabel.classList.remove('text-gray-400');
+            if (!labelInput.value) labelInput.value = value;
+            labelCharCount.textContent = `${labelInput.value.length}/40`;
             sourceChosenOnce = true;
+            labelTooltipContainer.classList.remove('hidden');
             sourceDropdownMenu.classList.add('hidden');
             const opt = document.querySelector(`.source-option[data-value="${value}"]`);
             const badge = opt ? opt.querySelector('span:last-child')?.textContent?.trim() : '';
@@ -2321,7 +2489,14 @@
         
         optionSelect.addEventListener('change', updateVisibility);
         displayTypeSelect.addEventListener('change', updateVisibility);
-        labelInput.addEventListener('input', updatePreview);
+        labelInput.addEventListener('input', () => {
+            labelCharCount.textContent = `${labelInput.value.length}/40`;
+            updatePreview();
+        });
+        labelTooltipInput.addEventListener('input', () => {
+            tooltipCharCount.textContent = `${labelTooltipInput.value.length}/40`;
+            updatePreview();
+        });
         hideMergedCheckbox.addEventListener('change', updatePreview);
         hideValueNameCheckbox.addEventListener('change', updatePreview);
 
@@ -2329,12 +2504,51 @@
             radio.addEventListener('change', () => { updateVisibility(); });
         });
 
+        // ==================== GLOBAL TOOLTIP ====================
+        (function() {
+            const tip = document.getElementById('g-tip');
+            if (!tip) return;
+            let activeHost = null;
+
+            function show(host, x, y) {
+                tip.textContent = host.dataset.tip || '';
+                tip.style.display = 'block';
+                position(x, y);
+            }
+            function position(x, y) {
+                const w = tip.offsetWidth, h = tip.offsetHeight;
+                let left = x - w / 2;
+                let top = y - h - 10;
+                if (left < 4) left = 4;
+                if (left + w > window.innerWidth - 4) left = window.innerWidth - w - 4;
+                if (top < 4) top = y + 14;
+                tip.style.left = left + 'px';
+                tip.style.top = top + 'px';
+            }
+            function hide() { tip.style.display = 'none'; activeHost = null; }
+
+            document.addEventListener('mouseover', e => {
+                const host = e.target.closest('.tip-host');
+                if (!host || !host.dataset.tip) { if (!activeHost) return; hide(); return; }
+                activeHost = host;
+                show(host, e.clientX, e.clientY);
+            });
+            document.addEventListener('mousemove', e => {
+                if (!activeHost) return;
+                position(e.clientX, e.clientY);
+            });
+            document.addEventListener('mouseout', e => {
+                if (!activeHost) return;
+                if (!e.relatedTarget || !e.relatedTarget.closest('.tip-host')) hide();
+            });
+        })();
+
         // ==================== INITIAL STATE ====================
         advancedOptions.classList.add('hidden');
         filterValuesSection.classList.add('hidden');
         dynamicConfigArea.innerHTML = '';
         remainingContainer.classList.add('hidden');
-        sourceDropdownLabel.textContent = sourceSelectEl.value;
+        labelTooltipContainer.classList.add('hidden');
         updateVisibility();
     </script>
 </body>
